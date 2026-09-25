@@ -106,3 +106,17 @@ export function getMajorMagicActiveMilliseconds(
     ) * 1000,
   );
 }
+
+
+/**
+ * Source-backed endpoints: Assemble starts by pulling 3 matching books and
+ * reaches 9 at level 10. Intermediate levels remain isolated interpolation
+ * until an exact per-level table is recovered.
+ */
+export function getAssemblePickupAmount(level: number): number {
+  if (level <= 0) {
+    return 0;
+  }
+
+  return Math.round(interpolate(Math.min(level, 10), 10, 3, 9));
+}
