@@ -121,12 +121,14 @@ export function BookLabelPlane({
       rotation={[-Math.PI / 2, 0, 0]}
       scale={[0.19, 0.105, 1]}
       renderOrder={2}
+      frustumCulled={false}
     >
       <planeGeometry args={[1, 1]} />
       <meshBasicMaterial
         map={texture}
         polygonOffset
         polygonOffsetFactor={-2}
+        side={THREE.DoubleSide}
         toneMapped={false}
       />
     </mesh>
