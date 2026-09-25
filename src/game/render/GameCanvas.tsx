@@ -7,6 +7,7 @@ import { Physics } from "@react-three/rapier";
 import type { PlacementFeedback } from "@/game/rules/placement-feedback";
 import { useCoarsePointer } from "@/game/input/use-coarse-pointer";
 import { useGameSettings } from "@/game/settings/game-settings";
+import { useViewControlStore } from "@/game/state/view-control-store";
 
 import { BookInstances } from "./BookInstances";
 import { BookLabels } from "./BookLabels";
@@ -35,6 +36,7 @@ export function GameCanvas({
 }: GameCanvasProps) {
   const coarsePointer = useCoarsePointer();
   const { fov, renderScale } = useGameSettings();
+  const zoomHeld = useViewControlStore((state) => state.zoomHeld);
 
   return (
     <Canvas
@@ -46,7 +48,7 @@ export function GameCanvas({
       <PerspectiveCamera
         makeDefault
         far={120}
-        fov={fov}
+        fov={zoomHeld ? Math.max(25, fov * 0.55) : fov}
         near={0.05}
         position={[0, 1.65, 7]}
       />
