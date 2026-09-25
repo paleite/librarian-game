@@ -6,6 +6,7 @@ import { useGameStore } from "@/game/state/game-store";
 
 export function ExitDoor() {
   const bookLocations = useGameStore((state) => state.bookLocations);
+  const phase = useGameStore((state) => state.phase);
   const completeRun = useGameStore((state) => state.completeRun);
 
   const allBooksShelved = useMemo(
@@ -17,6 +18,10 @@ export function ExitDoor() {
     [bookLocations],
   );
 
+  const canSubmit =
+    allBooksShelved &&
+    (phase === "sorting" || phase === "special-stage");
+
   return (
     <mesh
       position={[0, 2.15, 41.65]}
@@ -24,16 +29,16 @@ export function ExitDoor() {
       onPointerDown={(event) => {
         event.stopPropagation();
 
-        if (allBooksShelved) {
+        if (canSubmit) {
           completeRun();
         }
       }}
     >
       <boxGeometry args={[1, 1, 1]} />
       <meshStandardMaterial
-        color={allBooksShelved ? "#765f3b" : "#342b20"}
-        emissive={allBooksShelved ? "#9a7635" : "#000000"}
-        emissiveIntensity={allBooksShelved ? 0.18 : 0}
+        color={canSubmit ? "#765f3b" : "#342b20"}
+        emissive={canSubmit ? "#9a7635" : "#000000"}
+        emissiveIntensity={canSubmit ? 0.18 : 0}
         roughness={0.74}
       />
     </mesh>
