@@ -19,6 +19,8 @@ import { GameClock } from "./GameClock";
 import { SpecialStageController } from "./SpecialStageController";
 import { LibraryLighting } from "./LibraryLighting";
 import { AchievementController } from "./AchievementController";
+import { ShelfFurniture } from "./ShelfFurniture";
+import { FloorMaps } from "./FloorMaps";
 
 export interface GameCanvasProps {
   onInspectBook: (bookId: string | null) => void;
@@ -46,6 +48,8 @@ export function GameCanvas({
         <AchievementController />
         <SpecialStageController />
         <LibraryScene />
+        <ShelfFurniture />
+        <FloorMaps />
         <ExitDoor />
         <ShelfTargets onPlacementFeedback={onPlacementFeedback} />
         <SectionPlaques />
