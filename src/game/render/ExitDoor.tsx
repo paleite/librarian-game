@@ -26,6 +26,13 @@ export function ExitDoor() {
     <mesh
       position={[0, 2.15, 41.65]}
       scale={[3.2, 4.3, 0.28]}
+      userData={{
+        mobileInteract: () => {
+          if (canSubmit) {
+            completeRun();
+          }
+        },
+      }}
       onPointerDown={(event) => {
         event.stopPropagation();
 
