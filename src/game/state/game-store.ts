@@ -20,6 +20,7 @@ export interface GameActions extends BookMovementActions {
   startNewGame: (seed?: string) => void;
   returnToTitle: () => void;
   setCozyMode: (enabled: boolean) => void;
+  setAutosaveEnabled: (enabled: boolean) => void;
   saveToSlot: (slotId: string) => void;
   loadFromSlot: (slotId: string) => void;
 }
@@ -86,6 +87,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   returnToTitle: () => set(initialGameState),
 
   setCozyMode: (enabled) => set({ cozyMode: enabled }),
+
+  setAutosaveEnabled: (enabled) => set({ autosaveEnabled: enabled }),
 
   pickUpBook: (bookId) => {
     const state = get();
@@ -280,7 +283,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const state = get();
 
     writeSaveSlot(slotId, {
-      saveVersion: 1,
+      saveVersion: 2,
       savedAt: new Date().toISOString(),
       state: {
         phase: state.phase,
@@ -293,6 +296,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         elapsedMilliseconds: state.elapsedMilliseconds,
         majorMagicUsageCount: state.majorMagicUsageCount,
         cozyMode: state.cozyMode,
+        autosaveEnabled: state.autosaveEnabled,
       },
     });
   },
