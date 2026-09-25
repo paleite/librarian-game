@@ -16,6 +16,7 @@ import { canSprint, hasHighJump } from "@/game/rules/progression";
 import type { Transform3 } from "@/game/run/types";
 import { useGameStore } from "@/game/state/game-store";
 import { useInteractionUiStore } from "@/game/state/interaction-ui-store";
+import { useViewControlStore } from "@/game/state/view-control-store";
 import { useGameSettings } from "@/game/settings/game-settings";
 
 const WALK_SPEED = 4.2;
@@ -188,14 +189,55 @@ export function PlayerController() {
       }
     };
 
+    const handleMouseDown = (event: MouseEvent) => {
+      if (event.button !== 2 || !document.pointerLockElement) {
+        return;
+      }
+
+      event.preventDefault();
+      useViewControlStore.getState().setZoomHeld(true);
+    };
+
+    const handleMouseUp = (event: MouseEvent) => {
+      if (event.button !== 2) {
+        return;
+      }
+
+      useViewControlStore.getState().setZoomHeld(false);
+    };
+
+    const handleContextMenu = (event: MouseEvent) => {
+      if (document.pointerLockElement) {
+        event.preventDefault();
+      }
+    };
+
+    const handlePointerLockChange = () => {
+      if (!document.pointerLockElement) {
+        useViewControlStore.getState().setZoomHeld(false);
+      }
+    };
+
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
     window.addEventListener("wheel", handleWheel, { passive: false });
+    window.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("contextmenu", handleContextMenu);
+    document.addEventListener("pointerlockchange", handlePointerLockChange);
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("contextmenu", handleContextMenu);
+      document.removeEventListener(
+        "pointerlockchange",
+        handlePointerLockChange,
+      );
+      useViewControlStore.getState().setZoomHeld(false);
     };
   }, [keyBindings]);
 
