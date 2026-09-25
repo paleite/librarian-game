@@ -24,22 +24,22 @@ export interface AchievementDefinition {
 export const achievementDefinitions: readonly AchievementDefinition[] = [
   {
     id: "first-step",
-    name: "First Step",
+    name: "The First Step of Organizing",
     description: "Complete your first correct row.",
   },
   {
     id: "intermediate",
-    name: "Intermediate",
+    name: "Intermediate Librarian",
     description: "Complete 50 correct rows.",
   },
   {
     id: "veteran",
-    name: "Veteran",
+    name: "Veteran Librarian",
     description: "Complete 200 correct rows.",
   },
   {
     id: "grand",
-    name: "Grand",
+    name: "The Grand Librarian",
     description: "Complete all 400 correct rows.",
   },
   {
@@ -49,17 +49,17 @@ export const achievementDefinitions: readonly AchievementDefinition[] = [
   },
   {
     id: "sage",
-    name: "Sage",
+    name: "Sage of the Library",
     description: "Unlock all five Major Magic abilities.",
   },
   {
     id: "life-hack",
-    name: "Life Hack",
+    name: "Life Hack Wizard",
     description: "Unlock all four Minor Magic abilities.",
   },
   {
     id: "archmage",
-    name: "Archmage",
+    name: "The Archmage",
     description: "Reach the maximum level of every Major Magic ability.",
   },
   {
@@ -69,12 +69,12 @@ export const achievementDefinitions: readonly AchievementDefinition[] = [
   },
   {
     id: "efficiency",
-    name: "Efficiency",
+    name: "Efficiency Librarian",
     description: "Finish all 400 rows in under three hours.",
   },
   {
     id: "anti-magic",
-    name: "Anti-Magic",
+    name: "Anti-Magic Master",
     description: "Finish all 400 rows without unlocking or using Major Magic.",
   },
   {
