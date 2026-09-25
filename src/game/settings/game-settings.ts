@@ -49,6 +49,7 @@ export const defaultKeyBindings: KeyBindings = {
 export interface GameSettings {
   fov: number;
   renderScale: number;
+  lookSensitivity: number;
   displayTutorial: boolean;
   vignette: boolean;
   invertMouse: boolean;
@@ -58,6 +59,7 @@ export interface GameSettings {
 export const defaultGameSettings: GameSettings = {
   fov: 70,
   renderScale: 1,
+  lookSensitivity: 1,
   displayTutorial: true,
   vignette: true,
   invertMouse: false,
@@ -104,6 +106,10 @@ function sanitizeSettings(value: unknown): GameSettings {
       typeof candidate.renderScale === "number"
         ? clamp(candidate.renderScale, 0.5, 1)
         : defaultGameSettings.renderScale,
+    lookSensitivity:
+      typeof candidate.lookSensitivity === "number"
+        ? clamp(candidate.lookSensitivity, 0.25, 2)
+        : defaultGameSettings.lookSensitivity,
     displayTutorial:
       typeof candidate.displayTutorial === "boolean"
         ? candidate.displayTutorial
