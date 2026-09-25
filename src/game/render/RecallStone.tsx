@@ -22,6 +22,13 @@ export function RecallStone() {
     <group position={[0, 0, 35.2]}>
       <mesh
         position={[0, 0.55, 0]}
+        userData={{
+          mobileInteract: () => {
+            if (enabled) {
+              recallLooseBooks();
+            }
+          },
+        }}
         onPointerDown={(event) => {
           event.stopPropagation();
 
