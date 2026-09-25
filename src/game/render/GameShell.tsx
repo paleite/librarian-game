@@ -56,11 +56,11 @@ export function GameShell() {
 
     try {
       saveToSlot("autosave");
-      setSaveError(null);
     } catch (error) {
-      setSaveError(
-        error instanceof Error ? error.message : "Autosave operation failed",
-      );
+      const message =
+        error instanceof Error ? error.message : "Autosave operation failed";
+
+      window.setTimeout(() => setSaveError(message), 0);
     }
   }, [autosaveEnabled, correctRows, phase, saveToSlot]);
 
