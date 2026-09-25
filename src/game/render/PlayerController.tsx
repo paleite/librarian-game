@@ -500,7 +500,7 @@ export function PlayerController() {
       <PointerLockControls enabled={!coarsePointer} makeDefault pointerSpeed={0} />
       <RigidBody
         ref={rigidBodyRef}
-        position={[0, 1, 7]}
+        position={[0, 1, 33]}
         colliders={false}
         enabledRotations={[false, false, false]}
         friction={0}
