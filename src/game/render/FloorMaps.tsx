@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import * as THREE from "three";
 
 import { getFloorMapTexture } from "./floor-map-texture";
 
@@ -25,6 +26,7 @@ function FloorMap({
       <mesh
         position={[0, 0, 0.095]}
         scale={[3.08, 2.28, 1]}
+        frustumCulled={false}
         userData={{
           getInteractionInfo: () => ({
             title: `Floor ${floor} Categorization Map`,
@@ -33,7 +35,11 @@ function FloorMap({
         }}
       >
         <planeGeometry args={[1, 1]} />
-        <meshBasicMaterial map={texture} toneMapped={false} />
+        <meshBasicMaterial
+          map={texture}
+          side={THREE.DoubleSide}
+          toneMapped={false}
+        />
       </mesh>
 
       <mesh position={[0, 1.2, 0.1]} scale={[3.25, 0.12, 0.12]}>
