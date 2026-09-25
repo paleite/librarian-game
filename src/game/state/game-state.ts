@@ -14,6 +14,7 @@ export interface GameState {
   bookLocations: Record<string, BookLocation>;
   carriedBookIds: string[];
   collectedKeyIds: SecretKeyId[];
+  openedSecretChestIds: SecretKeyId[];
   majorMagicLevels: MajorMagicLevels;
   unlockedMinorMagicIds: MinorMagicId[];
   elapsedMilliseconds: number;
@@ -37,6 +38,7 @@ export interface BookMovementActions {
   placeBookOnShelf: (bookId: string, rowId: string, index: number) => void;
   collectSecretKey: (keyId: SecretKeyId) => void;
   openSecretChest: (keyId: SecretKeyId) => void;
+  collectSecretReward: (keyId: SecretKeyId) => void;
   recallLooseBooks: () => void;
   setTargetedShelfRow: (rowId: string | null) => void;
   useMajorMagic: (id: MajorMagicId) => void;
@@ -69,6 +71,7 @@ export const initialGameState: GameState = {
   bookLocations: {},
   carriedBookIds: [],
   collectedKeyIds: [],
+  openedSecretChestIds: [],
   majorMagicLevels: initialMajorMagicLevels,
   unlockedMinorMagicIds: [],
   elapsedMilliseconds: 0,
