@@ -4,13 +4,15 @@ import type { BookLocation, RunIdentity, Transform3 } from "@/game/run/types";
 
 export type GamePhase = "title" | "sorting" | "completed";
 
+export type MajorMagicLevels = Record<MajorMagicId, number>;
+
 export interface GameState {
   phase: GamePhase;
   runIdentity: RunIdentity | null;
   bookLocations: Record<string, BookLocation>;
   carriedBookIds: string[];
   collectedKeyIds: SecretKeyId[];
-  unlockedMajorMagicIds: MajorMagicId[];
+  majorMagicLevels: MajorMagicLevels;
   unlockedMinorMagicIds: MinorMagicId[];
   elapsedMilliseconds: number;
   majorMagicUsageCount: number;
@@ -29,13 +31,21 @@ export interface BookMovementActions {
   recallLooseBooks: () => void;
 }
 
+export const initialMajorMagicLevels: MajorMagicLevels = {
+  sort: 0,
+  "shelf-guide": 0,
+  insight: 0,
+  "auto-shelving": 0,
+  assemble: 0,
+};
+
 export const initialGameState: GameState = {
   phase: "title",
   runIdentity: null,
   bookLocations: {},
   carriedBookIds: [],
   collectedKeyIds: [],
-  unlockedMajorMagicIds: [],
+  majorMagicLevels: initialMajorMagicLevels,
   unlockedMinorMagicIds: [],
   elapsedMilliseconds: 0,
   majorMagicUsageCount: 0,
