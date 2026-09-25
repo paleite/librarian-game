@@ -22,7 +22,7 @@ export const secretWorldTransforms: readonly SecretWorldTransform[] = [
   {
     keyId: "golden-diamond",
     keyTransform: {
-      position: [2.7, 1.25, 35.8],
+      position: [4.55, 1.28, 35.6],
       rotation: [0, 0.5, 0],
     },
     chestTransform: {
@@ -33,7 +33,7 @@ export const secretWorldTransforms: readonly SecretWorldTransform[] = [
   {
     keyId: "emerald-club",
     keyTransform: {
-      position: [-3.8, 1.18, 8],
+      position: [-3.8, 1.18, 22.7],
       rotation: [0, 0.2, 0],
     },
     chestTransform: {
