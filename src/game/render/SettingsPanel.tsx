@@ -124,6 +124,24 @@ export function SettingsPanel({
 
           <label className="flex min-h-14 items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.035] px-4">
             <div>
+              <div className="font-semibold">Invert Mouse</div>
+              <div className="mt-1 text-xs text-white/45">
+                Invert vertical mouse-look direction
+              </div>
+            </div>
+            <input
+              checked={settings.invertMouse}
+              onChange={(event) =>
+                updateGameSettings({
+                  invertMouse: event.currentTarget.checked,
+                })
+              }
+              type="checkbox"
+            />
+          </label>
+
+          <label className="flex min-h-14 items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.035] px-4">
+            <div>
               <div className="font-semibold">Vignette</div>
               <div className="mt-1 text-xs text-white/45">
                 Darken the outer edge of the screen
