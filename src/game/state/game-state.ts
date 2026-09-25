@@ -1,4 +1,5 @@
 import type { MajorMagicId, MinorMagicId } from "@/game/content/abilities";
+import type { SectionCode } from "@/game/catalog/schema";
 import type { SecretKeyId } from "@/game/content/secrets";
 import type { BookLocation, RunIdentity, Transform3 } from "@/game/run/types";
 
@@ -18,6 +19,9 @@ export interface GameState {
   majorMagicUsageCount: number;
   cozyMode: boolean;
   autosaveEnabled: boolean;
+  activeShelfGuideSectionCode: SectionCode | null;
+  activeInsightSeriesId: string | null;
+  targetedShelfRowId: string | null;
 }
 
 export interface BookMovementActions {
@@ -29,6 +33,8 @@ export interface BookMovementActions {
   collectSecretKey: (keyId: SecretKeyId) => void;
   openSecretChest: (keyId: SecretKeyId) => void;
   recallLooseBooks: () => void;
+  setTargetedShelfRow: (rowId: string | null) => void;
+  useMajorMagic: (id: MajorMagicId) => void;
 }
 
 export const initialMajorMagicLevels: MajorMagicLevels = {
@@ -51,4 +57,7 @@ export const initialGameState: GameState = {
   majorMagicUsageCount: 0,
   cozyMode: false,
   autosaveEnabled: true,
+  activeShelfGuideSectionCode: null,
+  activeInsightSeriesId: null,
+  targetedShelfRowId: null,
 };
