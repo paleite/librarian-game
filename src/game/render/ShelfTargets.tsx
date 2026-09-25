@@ -5,12 +5,14 @@ import { useMemo, useState } from "react";
 import * as THREE from "three";
 
 import { shelfRowTransformById } from "@/game/layout/shelf-row-transforms";
+import { playPlacementCue, playRowCompleteCue } from "@/game/audio/sfx";
 import { shelfRows } from "@/game/layout/shelf-rows";
 import {
   getPlacementFeedback,
   type PlacementFeedback,
 } from "@/game/rules/placement-feedback";
 import { useGameStore } from "@/game/state/game-store";
+import { getCorrectRowCount } from "@/game/rules/shelf-state";
 
 interface HoveredSlot {
   rowId: string;
@@ -126,9 +128,19 @@ export function ShelfTargets({
       index: targetIndex,
       bookLocations,
     });
+    const correctRowsBefore = getCorrectRowCount(bookLocations);
 
     placeBookOnShelf(topCarriedBookId, rowId, targetIndex);
     onPlacementFeedback(feedback);
+    playPlacementCue(feedback);
+
+    const correctRowsAfter = getCorrectRowCount(
+      useGameStore.getState().bookLocations,
+    );
+
+    if (correctRowsAfter > correctRowsBefore) {
+      playRowCompleteCue();
+    }
 
     if (feedback === "wrong-section") {
       setTransientFeedback(null);
