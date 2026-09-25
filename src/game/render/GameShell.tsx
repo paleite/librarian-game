@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { useGameStore } from "@/game/state/game-store";
+import { getCorrectRowCount } from "@/game/rules/shelf-state";
 
 import { GameCanvas } from "./GameCanvas";
 
@@ -11,6 +12,9 @@ export function GameShell() {
   const phase = useGameStore((state) => state.phase);
   const seed = useGameStore((state) => state.runIdentity?.seed ?? null);
   const startNewGame = useGameStore((state) => state.startNewGame);
+  const bookLocations = useGameStore((state) => state.bookLocations);
+  const carriedCount = useGameStore((state) => state.carriedBookIds.length);
+  const correctRows = getCorrectRowCount(bookLocations);
   const saveToSlot = useGameStore((state) => state.saveToSlot);
   const loadFromSlot = useGameStore((state) => state.loadFromSlot);
 
@@ -40,6 +44,8 @@ export function GameShell() {
 
           <div className="pointer-events-auto rounded-lg border border-white/10 bg-black/55 px-3 py-2 text-right text-xs text-white/70 backdrop-blur">
             <div>Phase: {phase}</div>
+            <div>Correct rows: {correctRows} / 400</div>
+            <div>Carrying: {carriedCount} / 10+</div>
             <div className="max-w-52 truncate">Seed: {seed ?? "none"}</div>
             <div className="mt-2 flex justify-end gap-2">
               <button
