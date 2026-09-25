@@ -4,6 +4,7 @@ import { Canvas } from "@react-three/fiber";
 import { Physics } from "@react-three/rapier";
 
 import type { PlacementFeedback } from "@/game/rules/placement-feedback";
+import { useCoarsePointer } from "@/game/input/use-coarse-pointer";
 
 import { BookInstances } from "./BookInstances";
 import { CarriedBooks } from "./CarriedBooks";
@@ -27,11 +28,13 @@ export function GameCanvas({
   onInspectBook,
   onPlacementFeedback,
 }: GameCanvasProps) {
+  const coarsePointer = useCoarsePointer();
+
   return (
     <Canvas
       camera={{ fov: 70, near: 0.05, far: 120, position: [0, 1.65, 7] }}
-      dpr={[1, 1.5]}
-      shadows
+      dpr={coarsePointer ? 1 : [1, 1.5]}
+      shadows={!coarsePointer}
     >
       <color attach="background" args={["#100c09"]} />
       <fog attach="fog" args={["#100c09", 14, 38]} />
