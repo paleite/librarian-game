@@ -72,6 +72,14 @@ export function PlayerController() {
         dropKeyDownAtRef.current = performance.now();
       }
 
+      if (event.code === "KeyZ" && !event.repeat) {
+        const state = useGameStore.getState();
+
+        if (state.phase === "special-stage") {
+          state.startSpecialStageUltimate();
+        }
+      }
+
       if (
         !event.repeat &&
         document.pointerLockElement &&
