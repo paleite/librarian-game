@@ -15,6 +15,7 @@ import { useCoarsePointer } from "@/game/input/use-coarse-pointer";
 import { canSprint, hasHighJump } from "@/game/rules/progression";
 import type { Transform3 } from "@/game/run/types";
 import { useGameStore } from "@/game/state/game-store";
+import { useInteractionUiStore } from "@/game/state/interaction-ui-store";
 
 const WALK_SPEED = 4.2;
 const SPRINT_SPEED = 7.2;
@@ -96,6 +97,7 @@ export function PlayerController() {
   const interactionCenter = useRef(new THREE.Vector2(0, 0));
   const lastAimCheckAt = useRef(0);
   const lastTargetedShelfRowId = useRef<string | null>(null);
+  const lastAimObject = useRef<THREE.Object3D | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -194,18 +196,53 @@ export function PlayerController() {
     interactionRaycaster.current.far = 3.2;
     interactionRaycaster.current.setFromCamera(interactionCenter.current, camera);
 
-    if (coarsePointer && performance.now() - lastAimCheckAt.current >= 100) {
+    if (performance.now() - lastAimCheckAt.current >= 100) {
       lastAimCheckAt.current = performance.now();
 
+      const intersections = interactionRaycaster.current.intersectObjects(
+        scene.children,
+        true,
+      );
+      const aimIntersection = intersections.find(
+        (intersection) =>
+          typeof intersection.object.userData.getInteractionInfo === "function" ||
+          typeof intersection.object.userData.targetShelfRowId === "string" ||
+          typeof intersection.object.userData.mobileInteract === "function",
+      ) ?? null;
+
+      if (lastAimObject.current && lastAimObject.current !== aimIntersection?.object) {
+        const previousAimOut = lastAimObject.current.userData.onAimOut;
+
+        if (typeof previousAimOut === "function") {
+          previousAimOut();
+        }
+      }
+
+      lastAimObject.current = aimIntersection?.object ?? null;
+
+      if (aimIntersection) {
+        const onAim = aimIntersection.object.userData.onAim;
+
+        if (typeof onAim === "function") {
+          onAim(aimIntersection);
+        }
+
+        const getInteractionInfo =
+          aimIntersection.object.userData.getInteractionInfo;
+        const info =
+          typeof getInteractionInfo === "function"
+            ? getInteractionInfo(aimIntersection)
+            : null;
+
+        useInteractionUiStore.getState().setAimed(info ?? null);
+      } else {
+        useInteractionUiStore.getState().setAimed(null);
+      }
+
       const aimedShelfRowId =
-        interactionRaycaster.current
-          .intersectObjects(scene.children, true)
-          .map((intersection) =>
-            typeof intersection.object.userData.targetShelfRowId === "string"
-              ? (intersection.object.userData.targetShelfRowId as string)
-              : null,
-          )
-          .find((rowId) => rowId !== null) ?? null;
+        typeof aimIntersection?.object.userData.targetShelfRowId === "string"
+          ? (aimIntersection.object.userData.targetShelfRowId as string)
+          : null;
 
       if (aimedShelfRowId !== lastTargetedShelfRowId.current) {
         lastTargetedShelfRowId.current = aimedShelfRowId;
