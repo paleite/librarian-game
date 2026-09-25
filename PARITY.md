@@ -30,9 +30,9 @@ Project-specific additions such as mobile controls, Next.js, GitHub Pages, and p
 - [x] Functional section directory information exists
 - [x] Section code/name plaques exist
 - [x] Completed sections can visibly indicate completion
-- [ ] Recreate the source-like illustrated floor categorization/map board that shows where each book category belongs
+- [x] Recreate the source-like illustrated floor categorization/map board that shows where each book category belongs
 - [ ] Put the categorization maps in the correct staircase locations/orientations
-- [ ] Make the maps readable at normal in-world viewing distance
+- [x] Make the maps readable at normal in-world viewing distance
 - [ ] Match the source map's visual grouping/layout rather than only listing section names
 - [ ] Verify first-floor map presentation against the post-v1.0.5 source behavior
 
@@ -64,9 +64,9 @@ Project-specific additions such as mobile controls, Next.js, GitHub Pages, and p
 - [x] Dropped books remain in-world
 - [x] Carried-book stack has motion/sway rather than hard snapping
 - [x] Dropped/shelved book transforms settle rather than hard snapping
-- [ ] When aiming at a book, show the source-like title/volume interaction information
-- [ ] While carrying a book, persistently show its title/volume in the source-like bottom widget
-- [ ] When aiming at interactable objects, show their names/actions consistently
+- [x] When aiming at a book, show the source-like title/volume interaction information
+- [x] While carrying a book, persistently show its title/volume in the source-like bottom widget
+- [x] When aiming at interactable objects, show their names/actions consistently
 - [ ] Match source pickup/carry/drop animation timing and offsets
 - [ ] Match source interaction distance and aim tolerance
 - [ ] Match source stack-drop spacing/orientation more precisely
@@ -85,7 +85,7 @@ Project-specific additions such as mobile controls, Next.js, GitHub Pages, and p
 - [x] Correct-section but wrong row/position can produce the weaker silver feedback
 - [x] Exact placement can produce gold feedback
 - [x] Completed section plaque can turn blue
-- [ ] While holding a book and aiming at a shelf, show the source-like **green placement ghost/outline at the exact destination slot**
+- [x] While holding a book and aiming at a shelf, show the source-like **green placement ghost/outline at the exact destination slot**
 - [ ] Match silver/gold feedback duration, intensity, and presentation
 - [ ] Match source row/section completion audio feedback
 - [ ] Verify whether all shelf-tier flexibility and row-capacity rules exactly match source behavior
@@ -248,15 +248,15 @@ Project-specific additions such as mobile controls, Next.js, GitHub Pages, and p
 
 ## 15. Interaction UI parity
 
-- [ ] Aimed book name/volume shown consistently
-- [ ] Held/top carried book title/volume shown persistently
-- [ ] Shelf/category name shown when aimed
-- [ ] Key names shown when aimed
-- [ ] Chest names/locked state shown when aimed
-- [ ] Recall Stone name/state shown when aimed
-- [ ] Exit name/state shown when aimed
-- [ ] Green shelf-placement preview driven by the same aim target
-- [ ] Remove duplicate/debug-only inspection widgets once unified interaction HUD is live
+- [x] Aimed book name/volume shown consistently
+- [x] Held/top carried book title/volume shown persistently
+- [x] Shelf/category name shown when aimed
+- [x] Key names shown when aimed
+- [x] Chest names/locked state shown when aimed
+- [x] Recall Stone name/state shown when aimed
+- [x] Exit name/state shown when aimed
+- [x] Green shelf-placement preview driven by the same aim target
+- [x] Remove duplicate/debug-only inspection widgets once unified interaction HUD is live
 - [ ] Match source prompt positioning, sizing, typography, and fade behavior
 
 ## 16. Environment, props, materials, and presentation
