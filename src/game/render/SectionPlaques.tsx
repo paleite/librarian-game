@@ -8,6 +8,7 @@ import { shelfRows } from "@/game/layout/shelf-rows";
 import { shelfRowTransformById } from "@/game/layout/shelf-row-transforms";
 import { isSectionComplete } from "@/game/rules/shelf-state";
 import { useGameStore } from "@/game/state/game-store";
+import { bookInstances } from "@/game/run/book-instances";
 
 function getPlaqueTransform(sectionCode: string) {
   const transforms = shelfRows
@@ -36,7 +37,17 @@ function getPlaqueTransform(sectionCode: string) {
 
 export function SectionPlaques() {
   const bookLocations = useGameStore((state) => state.bookLocations);
-  const guidedSectionCode = useGameStore((state) => state.activeShelfGuideSectionCode);
+  const carriedBookIds = useGameStore((state) => state.carriedBookIds);
+  const shelfGuideActiveUntil = useGameStore(
+    (state) => state.shelfGuideActiveUntil,
+  );
+
+  const topCarriedBookId = carriedBookIds.at(-1);
+  const guidedSectionCode =
+    shelfGuideActiveUntil > Date.now() && topCarriedBookId
+      ? bookInstances.find((book) => book.id === topCarriedBookId)?.sectionCode ??
+        null
+      : null;
 
   const completionByCode = useMemo(
     () =>
