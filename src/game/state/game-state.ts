@@ -38,6 +38,8 @@ export interface BookMovementActions {
   recallLooseBooks: () => void;
   setTargetedShelfRow: (rowId: string | null) => void;
   useMajorMagic: (id: MajorMagicId) => void;
+  addElapsedMilliseconds: (milliseconds: number) => void;
+  completeRun: () => void;
 }
 
 export const initialMajorMagicLevels: MajorMagicLevels = {
