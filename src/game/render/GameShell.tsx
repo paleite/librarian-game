@@ -6,7 +6,6 @@ import { getAvailableKnownMajorMagicPoints, getCarryCapacity, getKnownEarnedMajo
 import { majorMagicDefinitions } from "@/game/content/abilities";
 import { getCorrectRowCount } from "@/game/rules/shelf-state";
 import { useGameStore } from "@/game/state/game-store";
-import { bookInstances } from "@/game/run/book-instances";
 import type { PlacementFeedback } from "@/game/rules/placement-feedback";
 import { ACHIEVEMENT_UNLOCKED_EVENT, readProfileState } from "@/game/save/profile";
 import type { AchievementId } from "@/game/content/achievements";
@@ -21,11 +20,11 @@ import { AchievementToasts } from "./AchievementToasts";
 import { AchievementGallery } from "./AchievementGallery";
 import { SaveSlotsPanel } from "./SaveSlotsPanel";
 import { LibraryAmbience } from "./LibraryAmbience";
+import { InteractionHud } from "./InteractionHud";
 
 
 export function GameShell() {
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [inspectedBookId, setInspectedBookId] = useState<string | null>(null);
   const [placementFeedback, setPlacementFeedback] = useState<PlacementFeedback | null>(null);
   const [magicMenuOpen, setMagicMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -88,9 +87,6 @@ export function GameShell() {
     correctRows,
     majorMagicLevels,
   );
-  const inspectedBook = inspectedBookId
-    ? bookInstances.find((book) => book.id === inspectedBookId) ?? null
-    : null;
 
   useEffect(() => {
     if (
@@ -216,9 +212,9 @@ export function GameShell() {
           }
         />
       ) : null}
+      <InteractionHud />
       <div className="absolute inset-0">
         <GameCanvas
-          onInspectBook={setInspectedBookId}
           onPlacementFeedback={(feedback) => {
             setPlacementFeedback(feedback);
             window.setTimeout(() => setPlacementFeedback(null), 850);
@@ -291,15 +287,6 @@ export function GameShell() {
             ) : null}
           </div>
         </div>
-
-        {inspectedBook && phase === "sorting" ? (
-          <div className="pointer-events-none absolute bottom-20 left-1/2 w-[min(34rem,calc(100vw-2rem))] -translate-x-1/2 rounded-xl border border-white/15 bg-black/72 px-5 py-4 text-center text-white shadow-2xl backdrop-blur">
-            <div className="text-base font-semibold">{inspectedBook.title}</div>
-            <div className="mt-1 text-sm text-white/65">
-              Volume {inspectedBook.volumeNumber} / {inspectedBook.volumeCount}
-            </div>
-          </div>
-        ) : null}
 
         {placementFeedback && phase === "sorting" ? (
           <div className="pointer-events-none absolute left-1/2 top-20 -translate-x-1/2 rounded-full border border-white/15 bg-black/65 px-4 py-2 text-sm font-medium text-white backdrop-blur">
