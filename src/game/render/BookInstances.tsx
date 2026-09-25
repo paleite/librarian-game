@@ -20,11 +20,7 @@ interface AnimatedBookTransform {
   quaternion: THREE.Quaternion;
 }
 
-export interface BookInstancesProps {
-  onInspectBook: (bookId: string | null) => void;
-}
-
-export function BookInstances({ onInspectBook }: BookInstancesProps) {
+export function BookInstances() {
   const instancedMeshRef = useRef<THREE.InstancedMesh>(null);
   const animatedTransformByBookId = useRef(
     new Map<string, AnimatedBookTransform>(),
@@ -135,7 +131,6 @@ export function BookInstances({ onInspectBook }: BookInstancesProps) {
   };
 
   const pickUp = (bookId: string) => {
-    onInspectBook(null);
     pickUpBook(bookId);
     playPickupCue();
   };
@@ -180,8 +175,6 @@ export function BookInstances({ onInspectBook }: BookInstancesProps) {
           }
         },
       }}
-      onPointerMove={(event) => onInspectBook(getTargetBookId(event))}
-      onPointerOut={() => onInspectBook(null)}
       onPointerDown={(event) => {
         const bookId = getTargetBookId(event);
 
