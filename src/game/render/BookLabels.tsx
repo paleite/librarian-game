@@ -2,8 +2,6 @@
 
 import { useFrame, useThree } from "@react-three/fiber";
 import { useMemo, useRef, useState } from "react";
-import * as THREE from "three";
-
 import { bookInstances } from "@/game/run/book-instances";
 import { useGameStore } from "@/game/state/game-store";
 
