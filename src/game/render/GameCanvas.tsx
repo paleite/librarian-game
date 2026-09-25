@@ -7,6 +7,7 @@ import type { PlacementFeedback } from "@/game/rules/placement-feedback";
 import { useCoarsePointer } from "@/game/input/use-coarse-pointer";
 
 import { BookInstances } from "./BookInstances";
+import { BookLabels } from "./BookLabels";
 import { CarriedBooks } from "./CarriedBooks";
 import { LibraryScene } from "./LibraryScene";
 import { PlayerController } from "./PlayerController";
@@ -56,6 +57,7 @@ export function GameCanvas({
         <SecretObjects />
         <RecallStone />
         <BookInstances onInspectBook={onInspectBook} />
+        <BookLabels />
         <CarriedBooks />
         <PlayerController />
       </Physics>
