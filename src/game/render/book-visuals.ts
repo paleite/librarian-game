@@ -1,5 +1,7 @@
 import * as THREE from "three";
 
+import { tutorialSeriesId } from "@/game/content/tutorial-series";
+
 const SECTION_BASE_HSL: Record<
   string,
   readonly [hue: number, saturation: number, lightness: number]
@@ -70,6 +72,12 @@ export function getStableBookColor(
 
   if (cached) {
     return cached;
+  }
+
+  if (seriesId === tutorialSeriesId) {
+    const tutorialColor = "#eee9dd";
+    colorCache.set(cacheKey, tutorialColor);
+    return tutorialColor;
   }
 
   const [baseHue, baseSaturation, baseLightness] =
