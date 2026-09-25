@@ -19,7 +19,7 @@ function getSaveKey(slotId: string): string {
   return `${SAVE_KEY_PREFIX}${slotId}`;
 }
 
-export function writeSaveSlot(slotId: string, payload: SavePayload): void {
+export function writeSaveSlot(slotId: string, payload: unknown): void {
   const validatedPayload = SavePayloadSchema.parse(payload);
   getStorage().setItem(getSaveKey(slotId), JSON.stringify(validatedPayload));
 }
