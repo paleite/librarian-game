@@ -86,7 +86,8 @@ export function GameShell() {
       phase === "completed" ||
       phase === "special-stage-completed"
     ) {
-      setSpecialStageUnlocked(readProfileState().specialStageUnlocked);
+      const unlocked = readProfileState().specialStageUnlocked;
+      window.setTimeout(() => setSpecialStageUnlocked(unlocked), 0);
     }
   }, [phase]);
 
