@@ -173,6 +173,24 @@ export function BookInstances({ onInspectBook }: BookInstancesProps) {
       args={[undefined, undefined, 3072]}
       castShadow
       receiveShadow
+      userData={{
+        mobileInteract: (intersection: THREE.Intersection) => {
+          const instanceId = intersection.instanceId;
+
+          if (instanceId === undefined) {
+            return;
+          }
+
+          const target = visibleBooks[instanceId];
+
+          if (!target) {
+            return;
+          }
+
+          onInspectBook(null);
+          pickUpBook(target.book.id);
+        },
+      }}
       onPointerMove={(event) => onInspectBook(getTargetBookId(event))}
       onPointerOut={() => onInspectBook(null)}
       onPointerDown={(event) => {
