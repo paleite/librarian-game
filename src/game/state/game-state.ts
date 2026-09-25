@@ -22,7 +22,9 @@ export interface GameState {
   cozyMode: boolean;
   autosaveEnabled: boolean;
   activeShelfGuideSectionCode: SectionCode | null;
+  shelfGuideActiveUntil: number;
   activeInsightSeriesId: string | null;
+  insightActiveUntil: number;
   targetedShelfRowId: string | null;
   majorMagicReadyAt: MajorMagicReadyAt;
   autoShelvingActiveUntil: number;
@@ -79,7 +81,9 @@ export const initialGameState: GameState = {
   cozyMode: false,
   autosaveEnabled: true,
   activeShelfGuideSectionCode: null,
+  shelfGuideActiveUntil: 0,
   activeInsightSeriesId: null,
+  insightActiveUntil: 0,
   targetedShelfRowId: null,
   majorMagicReadyAt: initialMajorMagicReadyAt,
   autoShelvingActiveUntil: 0,
