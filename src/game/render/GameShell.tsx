@@ -19,8 +19,8 @@ import { MobileControls } from "./MobileControls";
 import { MobileHud } from "./MobileHud";
 import { AchievementToasts } from "./AchievementToasts";
 import { AchievementGallery } from "./AchievementGallery";
+import { SaveSlotsPanel } from "./SaveSlotsPanel";
 
-const MANUAL_SAVE_SLOTS = ["slot-1", "slot-2", "slot-3"] as const;
 
 export function GameShell() {
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -31,6 +31,7 @@ export function GameShell() {
   const [specialStageUnlocked, setSpecialStageUnlocked] = useState(false);
   const [unlockedAchievementIds, setUnlockedAchievementIds] = useState<AchievementId[]>([]);
   const [achievementsOpen, setAchievementsOpen] = useState(false);
+  const [savesOpen, setSavesOpen] = useState(false);
   const previousCorrectRowsRef = useRef(0);
 
   const phase = useGameStore((state) => state.phase);
@@ -192,6 +193,22 @@ export function GameShell() {
           onClose={() => setAchievementsOpen(false)}
         />
       ) : null}
+      {savesOpen ? (
+        <SaveSlotsPanel
+          canSave={phase === "sorting"}
+          onClose={() => setSavesOpen(false)}
+          onSave={(slotId) =>
+            runSaveAction(() => saveToSlot(slotId))
+          }
+          onLoad={(slotId) =>
+            runSaveAction(() => {
+              loadFromSlot(slotId);
+              setSavesOpen(false);
+              setMobileMenuOpen(false);
+            })
+          }
+        />
+      ) : null}
       <div className="absolute inset-0">
         <GameCanvas
           onInspectBook={setInspectedBookId}
@@ -252,40 +269,13 @@ export function GameShell() {
               />
             </label>
 
-            {phase === "sorting" ? <div className="mt-2 grid grid-cols-3 gap-1">
-              {MANUAL_SAVE_SLOTS.map((slotId, index) => (
-                <div className="flex gap-1" key={slotId}>
-                  <button
-                    className="rounded border border-white/15 px-2 py-1 hover:bg-white/10"
-                    onClick={() =>
-                      runSaveAction(() => saveToSlot(slotId))
-                    }
-                    type="button"
-                  >
-                    S{index + 1}
-                  </button>
-                  <button
-                    className="rounded border border-white/15 px-2 py-1 hover:bg-white/10"
-                    onClick={() =>
-                      runSaveAction(() => loadFromSlot(slotId))
-                    }
-                    type="button"
-                  >
-                    L{index + 1}
-                  </button>
-                </div>
-              ))}
-            </div> : null}
-
             {phase === "sorting" ? (
               <button
-                className="mt-1 rounded border border-white/15 px-2 py-1 hover:bg-white/10"
-                onClick={() =>
-                  runSaveAction(() => loadFromSlot("autosave"))
-                }
+                className="mt-2 rounded border border-white/15 px-3 py-1.5 hover:bg-white/10"
+                onClick={() => setSavesOpen(true)}
                 type="button"
               >
-                Load autosave
+                Save / Load
               </button>
             ) : null}
 
@@ -496,6 +486,13 @@ export function GameShell() {
               </button>
               <button
                 className="rounded-lg border border-white/15 px-5 py-3 font-semibold text-white/80 hover:bg-white/[0.06]"
+                onClick={() => setSavesOpen(true)}
+                type="button"
+              >
+                Continue / Saves
+              </button>
+              <button
+                className="rounded-lg border border-white/15 px-5 py-3 font-semibold text-white/80 hover:bg-white/[0.06]"
                 onClick={() => setAchievementsOpen(true)}
                 type="button"
               >
@@ -582,39 +579,15 @@ export function GameShell() {
 
                 {phase === "sorting" ? (
                   <>
-                    <div className="mt-4 grid grid-cols-3 gap-2">
-                      {MANUAL_SAVE_SLOTS.map((slotId, index) => (
-                        <div className="grid gap-1" key={slotId}>
-                          <button
-                            className="min-h-11 rounded-xl border border-white/15 bg-white/[0.04] text-sm"
-                            onClick={() =>
-                              runSaveAction(() => saveToSlot(slotId))
-                            }
-                            type="button"
-                          >
-                            Save {index + 1}
-                          </button>
-                          <button
-                            className="min-h-11 rounded-xl border border-white/15 bg-white/[0.04] text-sm"
-                            onClick={() =>
-                              runSaveAction(() => loadFromSlot(slotId))
-                            }
-                            type="button"
-                          >
-                            Load {index + 1}
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-
                     <button
-                      className="mt-2 min-h-11 w-full rounded-xl border border-white/15 bg-white/[0.04] text-sm"
-                      onClick={() =>
-                        runSaveAction(() => loadFromSlot("autosave"))
-                      }
+                      className="mt-4 min-h-12 w-full rounded-xl border border-white/15 bg-white/[0.04] text-sm"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        setSavesOpen(true);
+                      }}
                       type="button"
                     >
-                      Load autosave
+                      Save / Load
                     </button>
 
                     <button
