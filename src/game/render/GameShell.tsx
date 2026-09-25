@@ -8,6 +8,8 @@ import { getCorrectRowCount } from "@/game/rules/shelf-state";
 import { useGameStore } from "@/game/state/game-store";
 import { bookInstances } from "@/game/run/book-instances";
 import type { PlacementFeedback } from "@/game/rules/placement-feedback";
+import { readProfileState } from "@/game/save/profile";
+import { SPECIAL_STAGE_ULTIMATE_DURATION_MILLISECONDS } from "@/game/modes/special-stage";
 
 import { GameCanvas } from "./GameCanvas";
 
@@ -18,11 +20,14 @@ export function GameShell() {
   const [inspectedBookId, setInspectedBookId] = useState<string | null>(null);
   const [placementFeedback, setPlacementFeedback] = useState<PlacementFeedback | null>(null);
   const [magicMenuOpen, setMagicMenuOpen] = useState(false);
+  const [specialStageUnlocked, setSpecialStageUnlocked] = useState(false);
   const previousCorrectRowsRef = useRef(0);
 
   const phase = useGameStore((state) => state.phase);
   const seed = useGameStore((state) => state.runIdentity?.seed ?? null);
   const startNewGame = useGameStore((state) => state.startNewGame);
+  const startSpecialStage = useGameStore((state) => state.startSpecialStage);
+  const returnToTitle = useGameStore((state) => state.returnToTitle);
   const saveToSlot = useGameStore((state) => state.saveToSlot);
   const loadFromSlot = useGameStore((state) => state.loadFromSlot);
   const setCozyMode = useGameStore((state) => state.setCozyMode);
@@ -30,6 +35,8 @@ export function GameShell() {
   const elapsedMilliseconds = useGameStore(
     (state) => state.elapsedMilliseconds,
   );
+  const specialStageUltimateStartedAt = useGameStore((state) => state.specialStageUltimateStartedAt);
+  const specialStagePlacedCount = useGameStore((state) => state.specialStagePlacedCount);
   const majorMagicUsageCount = useGameStore(
     (state) => state.majorMagicUsageCount,
   );
@@ -72,6 +79,16 @@ export function GameShell() {
   const inspectedBook = inspectedBookId
     ? bookInstances.find((book) => book.id === inspectedBookId) ?? null
     : null;
+
+  useEffect(() => {
+    if (
+      phase === "title" ||
+      phase === "completed" ||
+      phase === "special-stage-completed"
+    ) {
+      setSpecialStageUnlocked(readProfileState().specialStageUnlocked);
+    }
+  }, [phase]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -152,6 +169,13 @@ export function GameShell() {
 
           <div className="pointer-events-auto rounded-lg border border-white/10 bg-black/55 px-3 py-2 text-right text-xs text-white/70 backdrop-blur">
             <div>Phase: {phase}</div>
+            {phase === "special-stage" ? (
+              <div>
+                Ultimate: {specialStageUltimateStartedAt === null
+                  ? "Press Z"
+                  : `${specialStagePlacedCount}/3072`}
+              </div>
+            ) : null}
             {!cozyMode ? <div>Time: {elapsedText}</div> : null}
             <div>Correct rows: {correctRows} / 400</div>
             <div>Major Magic points: {availableMagicPoints} available · {spentMagicPoints}/{knownEarnedMagicPoints} spent/known earned</div>
@@ -184,7 +208,7 @@ export function GameShell() {
               />
             </label>
 
-            <div className="mt-2 grid grid-cols-3 gap-1">
+            {phase === "sorting" ? <div className="mt-2 grid grid-cols-3 gap-1">
               {MANUAL_SAVE_SLOTS.map((slotId, index) => (
                 <div className="flex gap-1" key={slotId}>
                   <button
@@ -207,17 +231,19 @@ export function GameShell() {
                   </button>
                 </div>
               ))}
-            </div>
+            </div> : null}
 
-            <button
-              className="mt-1 rounded border border-white/15 px-2 py-1 hover:bg-white/10"
-              onClick={() =>
-                runSaveAction(() => loadFromSlot("autosave"))
-              }
-              type="button"
-            >
-              Load autosave
-            </button>
+            {phase === "sorting" ? (
+              <button
+                className="mt-1 rounded border border-white/15 px-2 py-1 hover:bg-white/10"
+                onClick={() =>
+                  runSaveAction(() => loadFromSlot("autosave"))
+                }
+                type="button"
+              >
+                Load autosave
+              </button>
+            ) : null}
 
             {saveError ? (
               <div className="mt-2 max-w-64 text-red-300">{saveError}</div>
@@ -241,6 +267,21 @@ export function GameShell() {
               : placementFeedback === "correct-section"
                 ? "Correct section, wrong position or row"
                 : "Wrong section"}
+          </div>
+        ) : null}
+
+        {phase === "special-stage" ? (
+          <div className="pointer-events-none absolute bottom-8 left-1/2 -translate-x-1/2 rounded-full border border-violet-300/25 bg-black/70 px-4 py-2 text-sm text-violet-100 backdrop-blur">
+            {specialStageUltimateStartedAt === null
+              ? "Press Z to use the Ultimate Skill."
+              : `Ultimate arranging books: ${specialStagePlacedCount}/3072 · ~${Math.max(
+                  0,
+                  Math.ceil(
+                    (SPECIAL_STAGE_ULTIMATE_DURATION_MILLISECONDS *
+                      (1 - specialStagePlacedCount / 3072)) /
+                      60000,
+                  ),
+                )} min remaining`}
           </div>
         ) : null}
 
@@ -299,6 +340,38 @@ export function GameShell() {
                   <div>You are Fired! condition met.</div>
                 ) : null}
               </div>
+
+              <button
+                className="mt-6 rounded-lg border border-white/15 px-4 py-2 text-sm hover:bg-white/10"
+                onClick={() => returnToTitle()}
+                type="button"
+              >
+                Return to title
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        {phase === "special-stage-completed" ? (
+          <div className="pointer-events-auto absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+            <div className="w-[min(34rem,calc(100vw-2rem))] rounded-2xl border border-violet-300/20 bg-stone-950/95 p-7 text-center text-white shadow-2xl">
+              <div className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-300">
+                Special Stage
+              </div>
+              <h2 className="mt-2 text-3xl font-semibold">
+                Overtime avoided
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-white/60">
+                The Ultimate Skill arranged all 3,072 books. This stage is kept
+                separate from normal clear-time records.
+              </p>
+              <button
+                className="mt-6 rounded-lg border border-white/15 px-4 py-2 text-sm hover:bg-white/10"
+                onClick={() => returnToTitle()}
+                type="button"
+              >
+                Return to title
+              </button>
             </div>
           </div>
         ) : null}
@@ -369,13 +442,24 @@ export function GameShell() {
               Sort all 3,072 volumes into 400 correct series rows across the
               two-floor library.
             </p>
-            <button
-              className="mt-5 rounded-lg bg-amber-200 px-5 py-3 font-semibold text-stone-950 transition hover:bg-amber-100"
-              onClick={() => startNewGame()}
-              type="button"
-            >
-              Start new run
-            </button>
+            <div className="mt-5 flex flex-col gap-2">
+              <button
+                className="rounded-lg bg-amber-200 px-5 py-3 font-semibold text-stone-950 transition hover:bg-amber-100"
+                onClick={() => startNewGame()}
+                type="button"
+              >
+                Start new run
+              </button>
+              {specialStageUnlocked ? (
+                <button
+                  className="rounded-lg border border-violet-300/30 bg-violet-400/10 px-5 py-3 font-semibold text-violet-100 hover:bg-violet-400/15"
+                  onClick={() => startSpecialStage()}
+                  type="button"
+                >
+                  Special Stage
+                </button>
+              ) : null}
+            </div>
           </div>
         ) : (
           <div className="mx-auto mb-6 h-2 w-2 rounded-full bg-white/85 shadow-[0_0_8px_rgba(255,255,255,0.65)]" />
