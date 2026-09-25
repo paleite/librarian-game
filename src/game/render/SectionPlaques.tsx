@@ -36,6 +36,7 @@ function getPlaqueTransform(sectionCode: string) {
 
 export function SectionPlaques() {
   const bookLocations = useGameStore((state) => state.bookLocations);
+  const guidedSectionCode = useGameStore((state) => state.activeShelfGuideSectionCode);
 
   const completionByCode = useMemo(
     () =>
@@ -58,6 +59,7 @@ export function SectionPlaques() {
         }
 
         const complete = completionByCode.get(section.code) ?? false;
+        const guided = guidedSectionCode === section.code;
 
         return (
           <group
@@ -68,9 +70,9 @@ export function SectionPlaques() {
             <mesh scale={[0.95, 0.28, 0.08]}>
               <boxGeometry args={[1, 1, 1]} />
               <meshStandardMaterial
-                color={complete ? "#245aa7" : "#151515"}
-                emissive={complete ? "#2d72d2" : "#000000"}
-                emissiveIntensity={complete ? 0.72 : 0}
+                color={guided ? "#9d7d22" : complete ? "#245aa7" : "#151515"}
+                emissive={guided ? "#ffd85c" : complete ? "#2d72d2" : "#000000"}
+                emissiveIntensity={guided ? 0.95 : complete ? 0.72 : 0}
                 roughness={0.45}
               />
             </mesh>
@@ -85,9 +87,11 @@ export function SectionPlaques() {
               <div
                 className={
                   "pointer-events-none whitespace-nowrap rounded px-2 py-1 text-center text-[10px] font-bold tracking-wide " +
-                  (complete
-                    ? "bg-blue-600/90 text-white"
-                    : "bg-black/85 text-white/75")
+                  (guided
+                    ? "bg-amber-500/90 text-black"
+                    : complete
+                      ? "bg-blue-600/90 text-white"
+                      : "bg-black/85 text-white/75")
                 }
               >
                 <div>{section.code}</div>
