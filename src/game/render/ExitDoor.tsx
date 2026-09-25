@@ -27,6 +27,13 @@ export function ExitDoor() {
       position={[0, 2.15, 41.65]}
       scale={[3.2, 4.3, 0.28]}
       userData={{
+        getInteractionInfo: () => ({
+          title: "Library Exit",
+          subtitle: canSubmit
+            ? "All books shelved"
+            : "Finish shelving all 3,072 books first",
+          action: canSubmit ? "Submit library" : undefined,
+        }),
         mobileInteract: () => {
           if (canSubmit) {
             completeRun();
