@@ -2,7 +2,9 @@
 
 import { create } from "zustand";
 
-import { CATALOG_VERSION, LAYOUT_VERSION } from "@/game/run/generate-run";
+import { bookInstances } from "@/game/run/book-instances";
+import { generateInitialRun, CATALOG_VERSION, LAYOUT_VERSION } from "@/game/run/generate-run";
+import { spawnSlots } from "@/game/layout/spawn-slots";
 import type { BookLocation, Transform3 } from "@/game/run/types";
 import { readSaveSlot, writeSaveSlot } from "@/game/save/storage";
 
@@ -72,16 +74,26 @@ function withReindexedCarriedLocations(
 export const useGameStore = create<GameStore>((set, get) => ({
   ...initialGameState,
 
-  startNewGame: (seed) =>
+  startNewGame: (seed) => {
+    const runSeed = seed ?? createRunSeed();
+    const initialRun = generateInitialRun({
+      seed: runSeed,
+      books: bookInstances,
+      spawnSlotIds: spawnSlots.map((spawnSlot) => spawnSlot.id),
+    });
+
     set({
       ...initialGameState,
       phase: "sorting",
-      runIdentity: {
-        seed: seed ?? createRunSeed(),
-        catalogVersion: CATALOG_VERSION,
-        layoutVersion: LAYOUT_VERSION,
-      },
-    }),
+      runIdentity: initialRun.identity,
+      bookLocations: Object.fromEntries(
+        initialRun.books.map((bookState) => [
+          bookState.bookId,
+          bookState.location,
+        ]),
+      ),
+    });
+  },
 
   returnToTitle: () => set(initialGameState),
 
