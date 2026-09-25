@@ -1,6 +1,7 @@
 "use client";
 
 import { secretDefinitions, type SecretKeyId } from "@/game/content/secrets";
+import { playSecretCue } from "@/game/audio/sfx";
 import { secretWorldTransforms } from "@/game/layout/secret-transforms";
 import { useGameStore } from "@/game/state/game-store";
 
@@ -43,7 +44,11 @@ export function SecretObjects() {
                 position={transforms.keyTransform.position}
                 rotation={transforms.keyTransform.rotation}
                 userData={{
-                  mobileInteract: () => collectSecretKey(secret.keyId),
+                  mobileInteract: () => {
+                    collectSecretKey(secret.keyId);
+                  playSecretCue();
+                    playSecretCue();
+                  },
                 }}
                 onPointerDown={(event) => {
                   event.stopPropagation();
@@ -66,7 +71,11 @@ export function SecretObjects() {
               rotation={transforms.chestTransform.rotation}
               scale={[0.72, 0.42, 0.52]}
               userData={{
-                mobileInteract: () => openSecretChest(secret.keyId),
+                mobileInteract: () => {
+                  openSecretChest(secret.keyId);
+                playSecretCue();
+                  playSecretCue();
+                },
               }}
               onPointerDown={(event) => {
                 event.stopPropagation();
