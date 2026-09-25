@@ -3,7 +3,7 @@ import type { SectionCode } from "@/game/catalog/schema";
 import type { SecretKeyId } from "@/game/content/secrets";
 import type { BookLocation, RunIdentity, Transform3 } from "@/game/run/types";
 
-export type GamePhase = "title" | "sorting" | "completed";
+export type GamePhase = "title" | "sorting" | "completed" | "special-stage" | "special-stage-completed";
 
 export type MajorMagicLevels = Record<MajorMagicId, number>;
 export type MajorMagicReadyAt = Record<MajorMagicId, number>;
@@ -25,6 +25,8 @@ export interface GameState {
   targetedShelfRowId: string | null;
   majorMagicReadyAt: MajorMagicReadyAt;
   autoShelvingActiveUntil: number;
+  specialStageUltimateStartedAt: number | null;
+  specialStagePlacedCount: number;
 }
 
 export interface BookMovementActions {
@@ -40,6 +42,9 @@ export interface BookMovementActions {
   useMajorMagic: (id: MajorMagicId) => void;
   addElapsedMilliseconds: (milliseconds: number) => void;
   completeRun: () => void;
+  startSpecialStage: () => void;
+  startSpecialStageUltimate: () => void;
+  advanceSpecialStageUltimate: (now: number) => void;
 }
 
 export const initialMajorMagicLevels: MajorMagicLevels = {
@@ -75,4 +80,6 @@ export const initialGameState: GameState = {
   targetedShelfRowId: null,
   majorMagicReadyAt: initialMajorMagicReadyAt,
   autoShelvingActiveUntil: 0,
+  specialStageUltimateStartedAt: null,
+  specialStagePlacedCount: 0,
 };
