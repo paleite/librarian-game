@@ -3,10 +3,16 @@
 import { useMemo } from "react";
 import * as THREE from "three";
 
+import { tutorialSeriesId } from "@/game/content/tutorial-series";
+
 const textureCache = new Map<string, THREE.CanvasTexture>();
 
-function createLabelTexture(title: string, volumeNumber: number) {
-  const cacheKey = `${title}::${volumeNumber}`;
+function createLabelTexture(
+  title: string,
+  volumeNumber: number,
+  seriesId?: string,
+) {
+  const cacheKey = `${seriesId ?? "unknown"}::${title}::${volumeNumber}`;
   const cached = textureCache.get(cacheKey);
 
   if (cached) {
@@ -30,6 +36,34 @@ function createLabelTexture(title: string, volumeNumber: number) {
   context.lineWidth = 5;
   context.strokeRect(3, 3, canvas.width - 6, canvas.height - 6);
 
+  const tutorialCat = seriesId === tutorialSeriesId;
+
+  if (tutorialCat) {
+    context.save();
+    context.translate(30, 31);
+    context.fillStyle = "#f7f3ea";
+    context.strokeStyle = "#57483a";
+    context.lineWidth = 3;
+    context.beginPath();
+    context.arc(0, 0, 17, 0, Math.PI * 2);
+    context.fill();
+    context.stroke();
+    context.beginPath();
+    context.moveTo(-13, -12);
+    context.lineTo(-7, -26);
+    context.lineTo(-1, -14);
+    context.moveTo(13, -12);
+    context.lineTo(7, -26);
+    context.lineTo(1, -14);
+    context.stroke();
+    context.fillStyle = "#57483a";
+    context.beginPath();
+    context.arc(-6, -2, 2.2, 0, Math.PI * 2);
+    context.arc(6, -2, 2.2, 0, Math.PI * 2);
+    context.fill();
+    context.restore();
+  }
+
   context.fillStyle = "#21170f";
   context.textAlign = "center";
   context.textBaseline = "middle";
@@ -45,7 +79,11 @@ function createLabelTexture(title: string, volumeNumber: number) {
     context.font = `700 ${fontSize}px Arial, sans-serif`;
   }
 
-  context.fillText(title, canvas.width / 2, 38);
+  context.fillText(
+    title,
+    tutorialCat ? canvas.width / 2 + 18 : canvas.width / 2,
+    38,
+  );
 
   context.font = "700 17px Arial, sans-serif";
   context.fillStyle = "#6d4f31";
@@ -66,13 +104,15 @@ function createLabelTexture(title: string, volumeNumber: number) {
 export function BookLabelPlane({
   title,
   volumeNumber,
+  seriesId,
 }: {
   title: string;
   volumeNumber: number;
+  seriesId?: string;
 }) {
   const texture = useMemo(
-    () => createLabelTexture(title, volumeNumber),
-    [title, volumeNumber],
+    () => createLabelTexture(title, volumeNumber, seriesId),
+    [seriesId, title, volumeNumber],
   );
 
   return (
