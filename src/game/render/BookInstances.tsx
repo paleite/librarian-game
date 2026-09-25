@@ -139,6 +139,7 @@ export function BookInstances() {
     <instancedMesh
       ref={instancedMeshRef}
       args={[undefined, undefined, 3072]}
+      frustumCulled={false}
       castShadow
       receiveShadow
       userData={{
