@@ -2,12 +2,14 @@
 
 import { useMemo } from "react";
 
-import { playRecallCue } from "@/game/audio/sfx";
 import { useGameStore } from "@/game/state/game-store";
+import { useInteractionUiStore } from "@/game/state/interaction-ui-store";
 
 export function RecallStone() {
   const bookLocations = useGameStore((state) => state.bookLocations);
-  const recallLooseBooks = useGameStore((state) => state.recallLooseBooks);
+  const requestRecallConfirmation = useInteractionUiStore(
+    (state) => state.requestRecallConfirmation,
+  );
 
   const unshelvedCount = useMemo(
     () =>
@@ -24,8 +26,7 @@ export function RecallStone() {
       return;
     }
 
-    recallLooseBooks();
-    playRecallCue();
+    requestRecallConfirmation();
   };
 
   return (
