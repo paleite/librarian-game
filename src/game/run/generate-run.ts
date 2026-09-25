@@ -2,7 +2,7 @@ import { shuffled } from "./seeded-random";
 import type { BookInstance, InitialRun } from "./types";
 
 export const CATALOG_VERSION = 1;
-export const LAYOUT_VERSION = 1;
+export const LAYOUT_VERSION = 2;
 
 export interface GenerateInitialRunInput {
   seed: string;
