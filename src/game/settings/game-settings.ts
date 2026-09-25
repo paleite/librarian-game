@@ -5,12 +5,54 @@ import { useMemo, useSyncExternalStore } from "react";
 const STORAGE_KEY = "librarian-game.settings";
 const SETTINGS_CHANGED_EVENT = "librarian-game:settings-changed";
 
+export const keyBindingActions = [
+  "moveForward",
+  "moveBackward",
+  "moveLeft",
+  "moveRight",
+  "interact",
+  "drop",
+  "bookList",
+  "jump",
+  "sprint",
+  "magicMenu",
+  "ability1",
+  "ability2",
+  "ability3",
+  "ability4",
+  "ability5",
+  "specialUltimate",
+] as const;
+
+export type KeyBindingAction = (typeof keyBindingActions)[number];
+export type KeyBindings = Record<KeyBindingAction, string>;
+
+export const defaultKeyBindings: KeyBindings = {
+  moveForward: "KeyW",
+  moveBackward: "KeyS",
+  moveLeft: "KeyA",
+  moveRight: "KeyD",
+  interact: "KeyE",
+  drop: "KeyQ",
+  bookList: "KeyR",
+  jump: "Space",
+  sprint: "ShiftLeft",
+  magicMenu: "Tab",
+  ability1: "Digit1",
+  ability2: "Digit2",
+  ability3: "Digit3",
+  ability4: "Digit4",
+  ability5: "Digit5",
+  specialUltimate: "KeyZ",
+};
+
 export interface GameSettings {
   fov: number;
   renderScale: number;
   displayTutorial: boolean;
   vignette: boolean;
   invertMouse: boolean;
+  keyBindings: KeyBindings;
 }
 
 export const defaultGameSettings: GameSettings = {
@@ -19,10 +61,31 @@ export const defaultGameSettings: GameSettings = {
   displayTutorial: true,
   vignette: true,
   invertMouse: false,
+  keyBindings: defaultKeyBindings,
 };
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
+}
+
+function sanitizeKeyBindings(value: unknown): KeyBindings {
+  const candidate =
+    value && typeof value === "object"
+      ? (value as Partial<KeyBindings>)
+      : {};
+
+  return Object.fromEntries(
+    keyBindingActions.map((action) => {
+      const code = candidate[action];
+
+      return [
+        action,
+        typeof code === "string" && code.length > 0
+          ? code
+          : defaultKeyBindings[action],
+      ];
+    }),
+  ) as KeyBindings;
 }
 
 function sanitizeSettings(value: unknown): GameSettings {
@@ -53,6 +116,7 @@ function sanitizeSettings(value: unknown): GameSettings {
       typeof candidate.invertMouse === "boolean"
         ? candidate.invertMouse
         : defaultGameSettings.invertMouse,
+    keyBindings: sanitizeKeyBindings(candidate.keyBindings),
   };
 }
 
@@ -94,6 +158,26 @@ export function updateGameSettings(patch: Partial<GameSettings>): void {
 
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
   window.dispatchEvent(new Event(SETTINGS_CHANGED_EVENT));
+}
+
+export function updateKeyBinding(
+  action: KeyBindingAction,
+  code: string,
+): void {
+  const current = sanitizeSettings(JSON.parse(readSerialized()));
+
+  updateGameSettings({
+    keyBindings: {
+      ...current.keyBindings,
+      [action]: code,
+    },
+  });
+}
+
+export function resetKeyBindings(): void {
+  updateGameSettings({
+    keyBindings: defaultKeyBindings,
+  });
 }
 
 export function useGameSettings(): GameSettings {
