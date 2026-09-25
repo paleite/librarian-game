@@ -6,6 +6,7 @@ import * as THREE from "three";
 
 import { bookInstances } from "@/game/run/book-instances";
 import { spawnSlotById } from "@/game/layout/spawn-slots";
+import { shelfRowTransformById } from "@/game/layout/shelf-row-transforms";
 import { useGameStore } from "@/game/state/game-store";
 
 const BOOK_SIZE: readonly [number, number, number] = [0.22, 0.055, 0.32];
@@ -54,7 +55,11 @@ export function BookInstances() {
   const visibleBooks = useMemo(
     () =>
       Object.entries(bookLocations).flatMap(([bookId, location]) => {
-        if (location.kind !== "spawn" && location.kind !== "dropped") {
+        if (
+          location.kind !== "spawn" &&
+          location.kind !== "dropped" &&
+          location.kind !== "shelf"
+        ) {
           return [];
         }
 
@@ -64,10 +69,33 @@ export function BookInstances() {
           return [];
         }
 
-        const transform =
-          location.kind === "spawn"
-            ? spawnSlotById.get(location.slotId)?.transform
-            : location.transform;
+        let transform;
+
+        if (location.kind === "spawn") {
+          transform = spawnSlotById.get(location.slotId)?.transform;
+        } else if (location.kind === "dropped") {
+          transform = location.transform;
+        } else {
+          const row = shelfRowTransformById.get(location.rowId);
+
+          if (!row) {
+            return [];
+          }
+
+          const spacing = 0.23;
+          const centeredIndex = location.index - (row.capacity - 1) / 2;
+          const localX = centeredIndex * spacing;
+          const yaw = row.transform.rotation[1];
+
+          transform = {
+            position: [
+              row.transform.position[0] + localX * Math.cos(yaw),
+              row.transform.position[1] + 0.09,
+              row.transform.position[2] + localX * Math.sin(yaw),
+            ] as const,
+            rotation: [0, yaw, 0] as const,
+          };
+        }
 
         if (!transform) {
           return [];
