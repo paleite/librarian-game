@@ -54,7 +54,8 @@ a {
   }
 
   .desktop-game-hud,
-  .desktop-major-magic-hud {
+  .desktop-major-magic-hud,
+  .desktop-skill-point-progress {
     display: none !important;
   }
 
