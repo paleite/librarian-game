@@ -35,7 +35,7 @@ const RunIdentitySchema = z.object({
 });
 
 export const SavePayloadSchema = z.object({
-  saveVersion: z.literal(1),
+  saveVersion: z.literal(2),
   savedAt: z.string().datetime(),
   state: z.object({
     phase: z.enum(["title", "sorting", "completed"]),
@@ -48,6 +48,7 @@ export const SavePayloadSchema = z.object({
     elapsedMilliseconds: z.number().int().nonnegative(),
     majorMagicUsageCount: z.number().int().nonnegative(),
     cozyMode: z.boolean(),
+    autosaveEnabled: z.boolean(),
   }),
 });
 
