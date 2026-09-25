@@ -358,7 +358,25 @@ export const useGameStore = create<GameStore>((set, get) => ({
   openSecretChest: (keyId) => {
     const state = get();
 
-    if (!state.collectedKeyIds.includes(keyId)) {
+    if (
+      !state.collectedKeyIds.includes(keyId) ||
+      state.openedSecretChestIds.includes(keyId)
+    ) {
+      return;
+    }
+
+    set({
+      openedSecretChestIds: [
+        ...state.openedSecretChestIds,
+        keyId,
+      ],
+    });
+  },
+
+  collectSecretReward: (keyId) => {
+    const state = get();
+
+    if (!state.openedSecretChestIds.includes(keyId)) {
       return;
     }
 
@@ -769,7 +787,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const state = get();
 
     writeSaveSlot(slotId, {
-      saveVersion: 4,
+      saveVersion: 5,
       savedAt: new Date().toISOString(),
       state: {
         phase: state.phase,
@@ -777,6 +795,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         bookLocations: state.bookLocations,
         carriedBookIds: state.carriedBookIds,
         collectedKeyIds: state.collectedKeyIds,
+        openedSecretChestIds: state.openedSecretChestIds,
         majorMagicLevels: state.majorMagicLevels,
         majorMagicReadyAt: state.majorMagicReadyAt,
         autoShelvingActiveUntil: state.autoShelvingActiveUntil,
