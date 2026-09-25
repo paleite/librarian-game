@@ -1,3 +1,4 @@
+import { tutorialSpawnSlotIds } from "@/game/content/tutorial-series";
 import { createSeededRandom } from "@/game/run/seeded-random";
 import type { Transform3 } from "@/game/run/types";
 
@@ -7,25 +8,45 @@ export interface SpawnSlotDefinition {
   transform: Transform3;
 }
 
-const BOOKS_PER_FLOOR = 1536;
+const TOTAL_BOOKS = 3072;
+const TUTORIAL_BOOKS = 10;
+const RANDOMIZED_BOOKS = TOTAL_BOOKS - TUTORIAL_BOOKS;
+const FIRST_FLOOR_RANDOMIZED_BOOKS = 1531;
+const SECOND_FLOOR_RANDOMIZED_BOOKS =
+  RANDOMIZED_BOOKS - FIRST_FLOOR_RANDOMIZED_BOOKS;
 const GRID_COLUMNS = 48;
-const GRID_ROWS = 32;
 const HALL_WIDTH = 15.5;
 const HALL_LENGTH = 73;
 const HALL_Z_CENTER = -2.5;
 
+const tutorialSpawnSlots: readonly SpawnSlotDefinition[] =
+  tutorialSpawnSlotIds.map((id, index) => ({
+    id,
+    floor: 1,
+    transform: {
+      position: [
+        1.25 + (index % 5) * 0.16,
+        0.12 + Math.floor(index / 5) * 0.065,
+        6.1 + Math.floor(index / 5) * 0.12,
+      ],
+      rotation: [0.02, -0.18 + (index % 5) * 0.04, 0],
+    },
+  }));
+
 function createFloorSpawnSlots(
   floor: 1 | 2,
   floorY: number,
+  count: number,
 ): SpawnSlotDefinition[] {
-  const random = createSeededRandom(`layout-v2-floor-${floor}`);
+  const random = createSeededRandom(`layout-v3-floor-${floor}`);
+  const rows = Math.ceil(count / GRID_COLUMNS);
   const slots: SpawnSlotDefinition[] = [];
 
-  for (let index = 0; index < BOOKS_PER_FLOOR; index += 1) {
+  for (let index = 0; index < count; index += 1) {
     const column = index % GRID_COLUMNS;
     const row = Math.floor(index / GRID_COLUMNS);
     const normalizedX = column / (GRID_COLUMNS - 1) - 0.5;
-    const normalizedZ = row / (GRID_ROWS - 1) - 0.5;
+    const normalizedZ = rows <= 1 ? 0 : row / (rows - 1) - 0.5;
 
     const x =
       normalizedX * HALL_WIDTH +
@@ -33,7 +54,7 @@ function createFloorSpawnSlots(
     const z =
       HALL_Z_CENTER +
       normalizedZ * HALL_LENGTH +
-      (random() - 0.5) * (HALL_LENGTH / GRID_ROWS) * 0.85;
+      (random() - 0.5) * (HALL_LENGTH / rows) * 0.85;
     const yaw = (random() - 0.5) * Math.PI * 2;
     const tiltX = (random() - 0.5) * 0.16;
     const tiltZ = (random() - 0.5) * 0.16;
@@ -52,18 +73,17 @@ function createFloorSpawnSlots(
 }
 
 /**
- * Stable semantic spawn slots for LAYOUT_VERSION=2.
- *
- * The map topology follows the source game's long two-floor hall. Exact clutter
- * transforms remain tuning data and can change only with a layout-version bump.
+ * Physical spawn positions stay fixed between runs. The book identities assigned
+ * to the ordinary slots are shuffled; the ten-book tutorial series is fixed.
  */
 export const spawnSlots: readonly SpawnSlotDefinition[] = [
-  ...createFloorSpawnSlots(1, 0),
-  ...createFloorSpawnSlots(2, 4.6),
+  ...tutorialSpawnSlots,
+  ...createFloorSpawnSlots(1, 0, FIRST_FLOOR_RANDOMIZED_BOOKS),
+  ...createFloorSpawnSlots(2, 4.6, SECOND_FLOOR_RANDOMIZED_BOOKS),
 ];
 
-if (spawnSlots.length !== 3072) {
-  throw new Error(`Expected 3072 spawn slots, got ${spawnSlots.length}`);
+if (spawnSlots.length !== TOTAL_BOOKS) {
+  throw new Error(`Expected ${TOTAL_BOOKS} spawn slots, got ${spawnSlots.length}`);
 }
 
 export const spawnSlotById = new Map(
