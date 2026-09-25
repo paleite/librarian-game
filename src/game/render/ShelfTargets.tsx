@@ -60,6 +60,7 @@ export function ShelfTargets({
   const bookLocations = useGameStore((state) => state.bookLocations);
   const carriedBookIds = useGameStore((state) => state.carriedBookIds);
   const placeBookOnShelf = useGameStore((state) => state.placeBookOnShelf);
+  const setTargetedShelfRow = useGameStore((state) => state.setTargetedShelfRow);
 
   const occupiedIndexesByRow = useMemo(() => {
     const result = new Map<string, Set<number>>();
@@ -131,8 +132,12 @@ export function ShelfTargets({
               );
 
               setHoveredSlot(index === null ? null : { rowId: row.id, index });
+              setTargetedShelfRow(row.id);
             }}
-            onPointerOut={() => setHoveredSlot(null)}
+            onPointerOut={() => {
+              setHoveredSlot(null);
+              setTargetedShelfRow(null);
+            }}
             onPointerDown={(event) => {
               if (!topCarriedBookId) {
                 return;
