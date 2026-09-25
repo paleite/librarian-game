@@ -14,6 +14,8 @@ import { getMajorMagicActiveMilliseconds, getMajorMagicCooldownMilliseconds } fr
 import { shelfRows } from "@/game/layout/shelf-rows";
 import { secretDefinitions } from "@/game/content/secrets";
 import { fixedTutorialBookPlacements } from "@/game/content/tutorial-series";
+import { unlockSpecialStage } from "@/game/save/profile";
+import { getSpecialStageCorrectLocation, SPECIAL_STAGE_ULTIMATE_DURATION_MILLISECONDS, specialStageOrderedBookIds } from "@/game/modes/special-stage";
 
 import {
   initialGameState,
@@ -31,6 +33,9 @@ export interface GameActions extends BookMovementActions {
   useMajorMagic: (id: MajorMagicId) => void;
   addElapsedMilliseconds: (milliseconds: number) => void;
   completeRun: () => void;
+  startSpecialStage: () => void;
+  startSpecialStageUltimate: () => void;
+  advanceSpecialStageUltimate: (now: number) => void;
   saveToSlot: (slotId: string) => void;
   loadFromSlot: (slotId: string) => void;
 }
@@ -670,7 +675,94 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return;
     }
 
+    if (state.phase === "special-stage") {
+      set({ phase: "special-stage-completed" });
+      return;
+    }
+
+    if (state.phase !== "sorting") {
+      return;
+    }
+
+    unlockSpecialStage();
     set({ phase: "completed" });
+  },
+
+  startSpecialStage: () => {
+    const runSeed = `special-${createRunSeed()}`;
+    const initialRun = generateInitialRun({
+      seed: runSeed,
+      books: bookInstances,
+      spawnSlotIds: spawnSlots.map((spawnSlot) => spawnSlot.id),
+      fixedPlacements: fixedTutorialBookPlacements,
+    });
+
+    set({
+      ...initialGameState,
+      phase: "special-stage",
+      runIdentity: initialRun.identity,
+      bookLocations: Object.fromEntries(
+        initialRun.books.map((bookState) => [
+          bookState.bookId,
+          bookState.location,
+        ]),
+      ),
+    });
+  },
+
+  startSpecialStageUltimate: () => {
+    const state = get();
+
+    if (
+      state.phase !== "special-stage" ||
+      state.specialStageUltimateStartedAt !== null
+    ) {
+      return;
+    }
+
+    set({
+      specialStageUltimateStartedAt: Date.now(),
+      specialStagePlacedCount: 0,
+    });
+  },
+
+  advanceSpecialStageUltimate: (now) => {
+    const state = get();
+    const startedAt = state.specialStageUltimateStartedAt;
+
+    if (state.phase !== "special-stage" || startedAt === null) {
+      return;
+    }
+
+    const elapsed = Math.max(0, now - startedAt);
+    const desiredPlacedCount = Math.min(
+      specialStageOrderedBookIds.length,
+      Math.floor(
+        (elapsed / SPECIAL_STAGE_ULTIMATE_DURATION_MILLISECONDS) *
+          specialStageOrderedBookIds.length,
+      ),
+    );
+
+    if (desiredPlacedCount <= state.specialStagePlacedCount) {
+      return;
+    }
+
+    const bookLocations = { ...state.bookLocations };
+
+    for (
+      let index = state.specialStagePlacedCount;
+      index < desiredPlacedCount;
+      index += 1
+    ) {
+      const bookId = specialStageOrderedBookIds[index];
+      bookLocations[bookId] = getSpecialStageCorrectLocation(bookId);
+    }
+
+    set({
+      bookLocations,
+      carriedBookIds: [],
+      specialStagePlacedCount: desiredPlacedCount,
+    });
   },
 
   saveToSlot: (slotId) => {
