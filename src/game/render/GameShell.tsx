@@ -22,6 +22,7 @@ import { SaveSlotsPanel } from "./SaveSlotsPanel";
 import { LibraryAmbience } from "./LibraryAmbience";
 import { InteractionHud } from "./InteractionHud";
 import { MajorMagicHud } from "./MajorMagicHud";
+import { SkillPointProgress } from "./SkillPointProgress";
 
 
 export function GameShell() {
@@ -215,6 +216,7 @@ export function GameShell() {
       ) : null}
       <InteractionHud />
       <MajorMagicHud />
+      <SkillPointProgress />
       <div className="absolute inset-0">
         <GameCanvas
           onPlacementFeedback={(feedback) => {
