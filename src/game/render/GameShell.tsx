@@ -21,6 +21,7 @@ import { AchievementGallery } from "./AchievementGallery";
 import { SaveSlotsPanel } from "./SaveSlotsPanel";
 import { LibraryAmbience } from "./LibraryAmbience";
 import { InteractionHud } from "./InteractionHud";
+import { MajorMagicHud } from "./MajorMagicHud";
 
 
 export function GameShell() {
@@ -213,6 +214,7 @@ export function GameShell() {
         />
       ) : null}
       <InteractionHud />
+      <MajorMagicHud />
       <div className="absolute inset-0">
         <GameCanvas
           onPlacementFeedback={(feedback) => {
