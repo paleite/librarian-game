@@ -16,6 +16,7 @@ import { SectionPlaques } from "./SectionPlaques";
 import { ExitDoor } from "./ExitDoor";
 import { GameClock } from "./GameClock";
 import { SpecialStageController } from "./SpecialStageController";
+import { LibraryLighting } from "./LibraryLighting";
 
 export interface GameCanvasProps {
   onInspectBook: (bookId: string | null) => void;
@@ -34,14 +35,7 @@ export function GameCanvas({
     >
       <color attach="background" args={["#100c09"]} />
       <fog attach="fog" args={["#100c09", 14, 38]} />
-      <ambientLight intensity={0.65} />
-      <directionalLight
-        castShadow
-        intensity={1.2}
-        position={[4, 9, 5]}
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
-      />
+      <LibraryLighting />
 
       <Physics gravity={[0, -20, 0]}>
         <GameClock />
