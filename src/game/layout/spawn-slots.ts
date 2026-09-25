@@ -11,13 +11,14 @@ const BOOKS_PER_FLOOR = 1536;
 const GRID_COLUMNS = 48;
 const GRID_ROWS = 32;
 const HALL_WIDTH = 15.5;
-const HALL_LENGTH = 15.5;
+const HALL_LENGTH = 73;
+const HALL_Z_CENTER = -2.5;
 
 function createFloorSpawnSlots(
   floor: 1 | 2,
   floorY: number,
 ): SpawnSlotDefinition[] {
-  const random = createSeededRandom(`layout-v1-floor-${floor}`);
+  const random = createSeededRandom(`layout-v2-floor-${floor}`);
   const slots: SpawnSlotDefinition[] = [];
 
   for (let index = 0; index < BOOKS_PER_FLOOR; index += 1) {
@@ -28,10 +29,11 @@ function createFloorSpawnSlots(
 
     const x =
       normalizedX * HALL_WIDTH +
-      (random() - 0.5) * (HALL_WIDTH / GRID_COLUMNS) * 0.8;
+      (random() - 0.5) * (HALL_WIDTH / GRID_COLUMNS) * 0.95;
     const z =
+      HALL_Z_CENTER +
       normalizedZ * HALL_LENGTH +
-      (random() - 0.5) * (HALL_LENGTH / GRID_ROWS) * 0.8;
+      (random() - 0.5) * (HALL_LENGTH / GRID_ROWS) * 0.85;
     const yaw = (random() - 0.5) * Math.PI * 2;
     const tiltX = (random() - 0.5) * 0.16;
     const tiltZ = (random() - 0.5) * 0.16;
@@ -50,11 +52,10 @@ function createFloorSpawnSlots(
 }
 
 /**
- * Stable semantic spawn slots for the current layout version.
+ * Stable semantic spawn slots for LAYOUT_VERSION=2.
  *
- * Their IDs are permanent for LAYOUT_VERSION=1. Exact transforms are tuning
- * data: changing them requires a layout-version bump, but does not affect book
- * identity, catalog data, save shape, or sorting rules.
+ * The map topology follows the source game's long two-floor hall. Exact clutter
+ * transforms remain tuning data and can change only with a layout-version bump.
  */
 export const spawnSlots: readonly SpawnSlotDefinition[] = [
   ...createFloorSpawnSlots(1, 0),
