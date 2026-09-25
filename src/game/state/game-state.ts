@@ -23,6 +23,8 @@ export interface BookMovementActions {
   dropCarriedBook: (bookId: string, transform: Transform3) => void;
   dropAllCarriedBooks: (transforms: readonly Transform3[]) => void;
   placeBookOnShelf: (bookId: string, rowId: string, index: number) => void;
+  collectSecretKey: (keyId: SecretKeyId) => void;
+  openSecretChest: (keyId: SecretKeyId) => void;
 }
 
 export const initialGameState: GameState = {
