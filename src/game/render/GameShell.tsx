@@ -1,12 +1,27 @@
 "use client";
 
-import { GameCanvas } from "./GameCanvas";
+import { useState } from "react";
+
 import { useGameStore } from "@/game/state/game-store";
 
+import { GameCanvas } from "./GameCanvas";
+
 export function GameShell() {
+  const [saveError, setSaveError] = useState<string | null>(null);
   const phase = useGameStore((state) => state.phase);
   const seed = useGameStore((state) => state.runIdentity?.seed ?? null);
   const startNewGame = useGameStore((state) => state.startNewGame);
+  const saveToSlot = useGameStore((state) => state.saveToSlot);
+  const loadFromSlot = useGameStore((state) => state.loadFromSlot);
+
+  const runSaveAction = (action: () => void) => {
+    try {
+      action();
+      setSaveError(null);
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : "Save operation failed");
+    }
+  };
 
   return (
     <main className="relative h-dvh w-full overflow-hidden bg-black">
@@ -18,12 +33,33 @@ export function GameShell() {
         <div className="flex items-start justify-between gap-4">
           <div className="rounded-lg border border-white/10 bg-black/55 px-3 py-2 text-sm text-white backdrop-blur">
             <div className="font-medium">Librarian Game</div>
-            <div className="text-white/60">WASD · click scene for mouse look · Esc releases</div>
+            <div className="text-white/60">
+              WASD · click scene for mouse look · Esc releases
+            </div>
           </div>
 
-          <div className="rounded-lg border border-white/10 bg-black/55 px-3 py-2 text-right text-xs text-white/70 backdrop-blur">
+          <div className="pointer-events-auto rounded-lg border border-white/10 bg-black/55 px-3 py-2 text-right text-xs text-white/70 backdrop-blur">
             <div>Phase: {phase}</div>
             <div className="max-w-52 truncate">Seed: {seed ?? "none"}</div>
+            <div className="mt-2 flex justify-end gap-2">
+              <button
+                className="rounded border border-white/15 px-2 py-1 hover:bg-white/10"
+                onClick={() => runSaveAction(() => saveToSlot("quick"))}
+                type="button"
+              >
+                Save
+              </button>
+              <button
+                className="rounded border border-white/15 px-2 py-1 hover:bg-white/10"
+                onClick={() => runSaveAction(() => loadFromSlot("quick"))}
+                type="button"
+              >
+                Load
+              </button>
+            </div>
+            {saveError ? (
+              <div className="mt-2 max-w-64 text-red-300">{saveError}</div>
+            ) : null}
           </div>
         </div>
 
