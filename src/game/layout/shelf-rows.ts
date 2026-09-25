@@ -1,11 +1,19 @@
 import { bookSeries } from "@/game/catalog/book-series";
-import type { SectionCode } from "@/game/catalog/schema";
+import type { BookSeries, SectionCode } from "@/game/catalog/schema";
 
 export interface ShelfRowDefinition {
   id: string;
   sectionCode: SectionCode;
   capacity: 3 | 5 | 10;
   ordinalWithinSection: number;
+}
+
+const seriesBySection = new Map<SectionCode, BookSeries[]>();
+
+for (const series of bookSeries) {
+  const sectionSeries = seriesBySection.get(series.sectionCode) ?? [];
+  sectionSeries.push(series);
+  seriesBySection.set(series.sectionCode, sectionSeries);
 }
 
 /**
@@ -17,7 +25,7 @@ export interface ShelfRowDefinition {
  * reconstructed from maps/screenshots/video.
  */
 export const shelfRows: readonly ShelfRowDefinition[] = Array.from(
-  Map.groupBy(bookSeries, (series) => series.sectionCode),
+  seriesBySection,
 ).flatMap(([sectionCode, sectionSeries]) => {
   const capacities = sectionSeries
     .map((series) => series.volumeCount)
