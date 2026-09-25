@@ -10,6 +10,7 @@ interface PlayerInputSnapshot {
   dropReleasedAt: number | null;
   majorMagicQueued: MajorMagicId | null;
   specialUltimateQueued: boolean;
+  interactQueued: boolean;
 }
 
 const state: PlayerInputSnapshot = {
@@ -22,6 +23,7 @@ const state: PlayerInputSnapshot = {
   dropReleasedAt: null,
   majorMagicQueued: null,
   specialUltimateQueued: false,
+  interactQueued: false,
 };
 
 export const playerInput = {
@@ -59,6 +61,10 @@ export const playerInput = {
     state.specialUltimateQueued = true;
   },
 
+  queueInteract() {
+    state.interactQueued = true;
+  },
+
   consumeFrame() {
     const snapshot = { ...state };
 
@@ -67,6 +73,7 @@ export const playerInput = {
     state.jumpQueued = false;
     state.majorMagicQueued = null;
     state.specialUltimateQueued = false;
+    state.interactQueued = false;
 
     if (state.dropReleasedAt !== null) {
       state.dropPressedAt = null;
