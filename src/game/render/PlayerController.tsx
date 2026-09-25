@@ -16,6 +16,7 @@ import { canSprint, hasHighJump } from "@/game/rules/progression";
 import type { Transform3 } from "@/game/run/types";
 import { useGameStore } from "@/game/state/game-store";
 import { useInteractionUiStore } from "@/game/state/interaction-ui-store";
+import { useGameSettings } from "@/game/settings/game-settings";
 
 const WALK_SPEED = 4.2;
 const SPRINT_SPEED = 7.2;
@@ -87,6 +88,7 @@ function dropBooks(camera: THREE.Camera, heldMilliseconds: number) {
 
 export function PlayerController() {
   const coarsePointer = useCoarsePointer();
+  const { invertMouse } = useGameSettings();
   const rigidBodyRef = useRef<RapierRigidBody>(null);
   const pressedKeysRef = useRef(new Set<string>());
   const dropKeyDownAtRef = useRef<number | null>(null);
@@ -102,6 +104,14 @@ export function PlayerController() {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       pressedKeysRef.current.add(event.code);
+
+      if (
+        event.code === "KeyE" &&
+        !event.repeat &&
+        document.pointerLockElement
+      ) {
+        playerInput.queueInteract();
+      }
 
       if (event.code === "KeyQ" && !event.repeat) {
         dropKeyDownAtRef.current = performance.now();
@@ -168,6 +178,33 @@ export function PlayerController() {
       window.removeEventListener("keyup", handleKeyUp);
     };
   }, []);
+
+  useEffect(() => {
+    const handleMouseMove = (event: MouseEvent) => {
+      if (!document.pointerLockElement || coarsePointer) {
+        return;
+      }
+
+      const camera = statePlayerCamera.current;
+
+      if (!camera) {
+        return;
+      }
+
+      camera.rotation.order = "YXZ";
+      camera.rotation.y -= event.movementX * 0.002;
+      camera.rotation.x = THREE.MathUtils.clamp(
+        camera.rotation.x +
+          event.movementY * 0.002 * (invertMouse ? 1 : -1),
+        -MAX_PITCH,
+        MAX_PITCH,
+      );
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+
+    return () => document.removeEventListener("mousemove", handleMouseMove);
+  }, [coarsePointer, invertMouse]);
 
   useFrame(({ camera, scene }) => {
     statePlayerCamera.current = camera;
@@ -377,7 +414,7 @@ export function PlayerController() {
 
   return (
     <>
-      <PointerLockControls enabled={!coarsePointer} makeDefault />
+      <PointerLockControls enabled={!coarsePointer} makeDefault pointerSpeed={0} />
       <RigidBody
         ref={rigidBodyRef}
         position={[0, 1, 7]}
