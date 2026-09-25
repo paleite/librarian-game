@@ -239,6 +239,43 @@ export const useGameStore = create<GameStore>((set, get) => ({
     });
   },
 
+  recallLooseBooks: () => {
+    const state = get();
+    const unshelvedBookIds = Object.entries(state.bookLocations)
+      .filter(([, location]) => location.kind !== "shelf")
+      .map(([bookId]) => bookId);
+
+    if (unshelvedBookIds.length === 0 || unshelvedBookIds.length > 20) {
+      return;
+    }
+
+    const carriedBookIds = new Set(state.carriedBookIds);
+    const recalledBookIds = unshelvedBookIds.filter(
+      (bookId) => !carriedBookIds.has(bookId),
+    );
+    const bookLocations = { ...state.bookLocations };
+
+    for (let index = 0; index < recalledBookIds.length; index += 1) {
+      const bookId = recalledBookIds[index];
+      const column = index % 5;
+      const row = Math.floor(index / 5);
+
+      bookLocations[bookId] = {
+        kind: "dropped",
+        transform: {
+          position: [
+            -0.65 + column * 0.32,
+            0.12,
+            34.2 - row * 0.4,
+          ],
+          rotation: [0, (index % 2) * 0.18, 0],
+        },
+      };
+    }
+
+    set({ bookLocations });
+  },
+
   saveToSlot: (slotId) => {
     const state = get();
 
