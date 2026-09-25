@@ -43,7 +43,7 @@ const MajorMagicLevelsSchema = z.object({
 });
 
 export const SavePayloadSchema = z.object({
-  saveVersion: z.literal(5),
+  saveVersion: z.literal(6),
   savedAt: z.string().datetime(),
   state: z.object({
     phase: z.enum(["title", "sorting", "completed"]),
@@ -53,6 +53,8 @@ export const SavePayloadSchema = z.object({
     collectedKeyIds: z.array(z.enum(secretKeyIds)),
     openedSecretChestIds: z.array(z.enum(secretKeyIds)),
     majorMagicLevels: MajorMagicLevelsSchema,
+    shelfGuideActiveUntil: z.number().nonnegative(),
+    insightActiveUntil: z.number().nonnegative(),
     majorMagicReadyAt: z.object({
       sort: z.number().nonnegative(),
       "shelf-guide": z.number().nonnegative(),
