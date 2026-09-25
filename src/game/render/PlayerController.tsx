@@ -93,6 +93,7 @@ export function PlayerController() {
   const rightVector = useRef(new THREE.Vector3());
   const movementVector = useRef(new THREE.Vector3());
   const interactionRaycaster = useRef(new THREE.Raycaster());
+  const interactionCenter = useRef(new THREE.Vector2(0, 0));
   const lastAimCheckAt = useRef(0);
   const lastTargetedShelfRowId = useRef<string | null>(null);
 
@@ -191,7 +192,7 @@ export function PlayerController() {
     }
 
     interactionRaycaster.current.far = 3.2;
-    interactionRaycaster.current.setFromCamera({ x: 0, y: 0 }, camera);
+    interactionRaycaster.current.setFromCamera(interactionCenter.current, camera);
 
     if (coarsePointer && performance.now() - lastAimCheckAt.current >= 100) {
       lastAimCheckAt.current = performance.now();
