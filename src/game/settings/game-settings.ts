@@ -10,6 +10,7 @@ export interface GameSettings {
   renderScale: number;
   displayTutorial: boolean;
   vignette: boolean;
+  invertMouse: boolean;
 }
 
 export const defaultGameSettings: GameSettings = {
@@ -17,6 +18,7 @@ export const defaultGameSettings: GameSettings = {
   renderScale: 1,
   displayTutorial: true,
   vignette: true,
+  invertMouse: false,
 };
 
 function clamp(value: number, min: number, max: number): number {
@@ -47,6 +49,10 @@ function sanitizeSettings(value: unknown): GameSettings {
       typeof candidate.vignette === "boolean"
         ? candidate.vignette
         : defaultGameSettings.vignette,
+    invertMouse:
+      typeof candidate.invertMouse === "boolean"
+        ? candidate.invertMouse
+        : defaultGameSettings.invertMouse,
   };
 }
 
