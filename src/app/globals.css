@@ -31,3 +31,41 @@ button,
 a {
   -webkit-tap-highlight-color: transparent;
 }
+
+
+.mobile-game-controls,
+.mobile-game-hud,
+.mobile-game-menu {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  html,
+  body {
+    overscroll-behavior: none;
+  }
+
+  body,
+  canvas {
+    touch-action: none;
+  }
+
+  .desktop-game-hud {
+    display: none !important;
+  }
+
+  .mobile-game-controls,
+  .mobile-game-hud,
+  .mobile-game-menu {
+    display: block;
+  }
+
+  .mobile-game-menu {
+    display: flex;
+  }
+
+  button,
+  input {
+    touch-action: manipulation;
+  }
+}
