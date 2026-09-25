@@ -10,7 +10,7 @@ import { readSaveSlot, writeSaveSlot } from "@/game/save/storage";
 import { getAvailableKnownMajorMagicPoints, getCarryCapacity } from "@/game/rules/progression";
 import { getCorrectRowCount } from "@/game/rules/shelf-state";
 import { majorMagicDefinitionById, type MajorMagicId } from "@/game/content/abilities";
-import { getMajorMagicActiveMilliseconds, getMajorMagicCooldownMilliseconds } from "@/game/content/major-magic-tuning";
+import { getAssemblePickupAmount, getMajorMagicActiveMilliseconds, getMajorMagicCooldownMilliseconds } from "@/game/content/major-magic-tuning";
 import { shelfRows } from "@/game/layout/shelf-rows";
 import { secretDefinitions } from "@/game/content/secrets";
 import { fixedTutorialBookPlacements } from "@/game/content/tutorial-series";
@@ -585,7 +585,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
           return (left?.volumeNumber ?? 0) - (right?.volumeNumber ?? 0);
         })
-        .slice(0, Math.min(level, availableSpace));
+        .slice(0, Math.min(getAssemblePickupAmount(level), availableSpace));
 
       if (candidateIds.length === 0) {
         return;
