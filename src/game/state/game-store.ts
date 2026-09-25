@@ -211,6 +211,205 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   setAutosaveEnabled: (enabled) => set({ autosaveEnabled: enabled }),
 
+  pickUpBook: (bookId) => {
+    const state = get();
+    assertBookExists(state.bookLocations, bookId);
+
+    if (state.carriedBookIds.includes(bookId)) {
+      return;
+    }
+
+    if (state.carriedBookIds.length >= getCarryCapacity(state)) {
+      return;
+    }
+
+    let carriedBookIds = [...state.carriedBookIds, bookId];
+    let bookLocations = withReindexedCarriedLocations(
+      state.bookLocations,
+      carriedBookIds,
+    );
+
+    if (
+      state.targetedShelfRowId &&
+      Date.now() < state.autoShelvingActiveUntil
+    ) {
+      const autoShelved = autoShelveAtTarget(
+        { bookLocations, carriedBookIds },
+        state.targetedShelfRowId,
+      );
+      bookLocations = autoShelved.bookLocations;
+      carriedBookIds = autoShelved.carriedBookIds;
+    }
+
+    set({ carriedBookIds, bookLocations });
+  },
+
+  reorderCarriedBook: (fromIndex, toIndex) => {
+    const state = get();
+    const carriedBookIds = [...state.carriedBookIds];
+
+    if (
+      fromIndex < 0 ||
+      toIndex < 0 ||
+      fromIndex >= carriedBookIds.length ||
+      toIndex >= carriedBookIds.length ||
+      fromIndex === toIndex
+    ) {
+      return;
+    }
+
+    const [bookId] = carriedBookIds.splice(fromIndex, 1);
+    carriedBookIds.splice(toIndex, 0, bookId);
+
+    set({
+      carriedBookIds,
+      bookLocations: withReindexedCarriedLocations(
+        state.bookLocations,
+        carriedBookIds,
+      ),
+    });
+  },
+
+  dropCarriedBook: (bookId, transform) => {
+    const state = get();
+    const carriedBookIds = state.carriedBookIds.filter(
+      (carriedBookId) => carriedBookId !== bookId,
+    );
+
+    if (carriedBookIds.length === state.carriedBookIds.length) {
+      return;
+    }
+
+    const bookLocations = withReindexedCarriedLocations(
+      state.bookLocations,
+      carriedBookIds,
+    );
+
+    bookLocations[bookId] = {
+      kind: "dropped",
+      transform,
+    };
+
+    set({ carriedBookIds, bookLocations });
+  },
+
+  dropAllCarriedBooks: (transforms) => {
+    const state = get();
+
+    if (transforms.length !== state.carriedBookIds.length) {
+      throw new Error(
+        `Expected ${state.carriedBookIds.length} drop transforms, got ${transforms.length}`,
+      );
+    }
+
+    const bookLocations = { ...state.bookLocations };
+
+    for (let index = 0; index < state.carriedBookIds.length; index += 1) {
+      bookLocations[state.carriedBookIds[index]] = {
+        kind: "dropped",
+        transform: transforms[index],
+      };
+    }
+
+    set({
+      carriedBookIds: [],
+      bookLocations,
+    });
+  },
+
+  placeBookOnShelf: (bookId, rowId, index) => {
+    const state = get();
+    assertBookExists(state.bookLocations, bookId);
+
+    const carriedBookIds = state.carriedBookIds.filter(
+      (carriedBookId) => carriedBookId !== bookId,
+    );
+    const bookLocations = withReindexedCarriedLocations(
+      state.bookLocations,
+      carriedBookIds,
+    );
+
+    bookLocations[bookId] = {
+      kind: "shelf",
+      rowId,
+      index,
+    };
+
+    set({ carriedBookIds, bookLocations });
+  },
+
+  collectSecretKey: (keyId) => {
+    const state = get();
+
+    if (state.collectedKeyIds.includes(keyId)) {
+      return;
+    }
+
+    set({
+      collectedKeyIds: [...state.collectedKeyIds, keyId],
+    });
+  },
+
+  openSecretChest: (keyId) => {
+    const state = get();
+
+    if (!state.collectedKeyIds.includes(keyId)) {
+      return;
+    }
+
+    const secret = secretDefinitions.find(
+      (definition) => definition.keyId === keyId,
+    );
+
+    if (!secret || state.unlockedMinorMagicIds.includes(secret.rewardId)) {
+      return;
+    }
+
+    set({
+      unlockedMinorMagicIds: [
+        ...state.unlockedMinorMagicIds,
+        secret.rewardId,
+      ],
+    });
+  },
+
+  recallLooseBooks: () => {
+    const state = get();
+    const unshelvedBookIds = Object.entries(state.bookLocations)
+      .filter(([, location]) => location.kind !== "shelf")
+      .map(([bookId]) => bookId);
+
+    if (unshelvedBookIds.length === 0 || unshelvedBookIds.length > 20) {
+      return;
+    }
+
+    const carriedBookIds = new Set(state.carriedBookIds);
+    const recalledBookIds = unshelvedBookIds.filter(
+      (bookId) => !carriedBookIds.has(bookId),
+    );
+    const bookLocations = { ...state.bookLocations };
+
+    for (let index = 0; index < recalledBookIds.length; index += 1) {
+      const bookId = recalledBookIds[index];
+      const column = index % 5;
+      const row = Math.floor(index / 5);
+
+      bookLocations[bookId] = {
+        kind: "dropped",
+        transform: {
+          position: [
+            -0.65 + column * 0.32,
+            0.12,
+            34.2 - row * 0.4,
+          ],
+          rotation: [0, (index % 2) * 0.18, 0],
+        },
+      };
+    }
+
+    set({ bookLocations });
+  },
+
   upgradeMajorMagic: (id) => {
     const state = get();
     const definition = majorMagicDefinitionById.get(id);
