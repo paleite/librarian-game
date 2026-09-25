@@ -161,6 +161,17 @@ export function MobileControls({ onOpenMenu }: MobileControlsProps) {
           ) : null}
 
           <button
+            className="grid h-16 min-w-16 place-items-center rounded-2xl border border-amber-200/30 bg-amber-200/15 px-3 text-sm font-semibold text-amber-50 backdrop-blur"
+            onPointerDown={(event) => {
+              event.preventDefault();
+              playerInput.queueInteract();
+            }}
+            type="button"
+          >
+            Use
+          </button>
+
+          <button
             className="grid h-14 min-w-14 place-items-center rounded-2xl border border-white/20 bg-black/50 px-3 text-sm font-semibold text-white backdrop-blur"
             onClick={() => setMagicOpen((open) => !open)}
             type="button"
