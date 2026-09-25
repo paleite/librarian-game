@@ -1,7 +1,7 @@
 "use client";
 
-import { secretDefinitions, type SecretKeyId } from "@/game/content/secrets";
 import { playSecretCue } from "@/game/audio/sfx";
+import { secretDefinitions, type SecretKeyId } from "@/game/content/secrets";
 import { secretWorldTransforms } from "@/game/layout/secret-transforms";
 import { useGameStore } from "@/game/state/game-store";
 
@@ -37,22 +37,26 @@ export function SecretObjects() {
         const unlocked = unlockedMinorMagicIds.includes(secret.rewardId);
         const color = COLOR_BY_KEY[secret.keyId];
 
+        const collectKey = () => {
+          collectSecretKey(secret.keyId);
+          playSecretCue();
+        };
+
+        const openChest = () => {
+          openSecretChest(secret.keyId);
+          playSecretCue();
+        };
+
         return (
           <group key={secret.keyId}>
             {!hasKey ? (
               <mesh
                 position={transforms.keyTransform.position}
                 rotation={transforms.keyTransform.rotation}
-                userData={{
-                  mobileInteract: () => {
-                    collectSecretKey(secret.keyId);
-                  playSecretCue();
-                    playSecretCue();
-                  },
-                }}
+                userData={{ mobileInteract: collectKey }}
                 onPointerDown={(event) => {
                   event.stopPropagation();
-                  collectSecretKey(secret.keyId);
+                  collectKey();
                 }}
               >
                 <octahedronGeometry args={[0.18, 0]} />
@@ -70,16 +74,10 @@ export function SecretObjects() {
               position={transforms.chestTransform.position}
               rotation={transforms.chestTransform.rotation}
               scale={[0.72, 0.42, 0.52]}
-              userData={{
-                mobileInteract: () => {
-                  openSecretChest(secret.keyId);
-                playSecretCue();
-                  playSecretCue();
-                },
-              }}
+              userData={{ mobileInteract: openChest }}
               onPointerDown={(event) => {
                 event.stopPropagation();
-                openSecretChest(secret.keyId);
+                openChest();
               }}
             >
               <boxGeometry args={[1, 1, 1]} />
