@@ -51,7 +51,6 @@ export function GameShell() {
   const returnToTitle = useGameStore((state) => state.returnToTitle);
   const saveToSlot = useGameStore((state) => state.saveToSlot);
   const loadFromSlot = useGameStore((state) => state.loadFromSlot);
-  const setCozyMode = useGameStore((state) => state.setCozyMode);
   const cozyMode = useGameStore((state) => state.cozyMode);
   const elapsedMilliseconds = useGameStore(
     (state) => state.elapsedMilliseconds,
