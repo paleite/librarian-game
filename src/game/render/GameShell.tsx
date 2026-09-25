@@ -1,33 +1,70 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { useGameStore } from "@/game/state/game-store";
-import { getCorrectRowCount } from "@/game/rules/shelf-state";
 import { getCarryCapacity } from "@/game/rules/progression";
+import { getCorrectRowCount } from "@/game/rules/shelf-state";
+import { useGameStore } from "@/game/state/game-store";
 
 import { GameCanvas } from "./GameCanvas";
 
+const MANUAL_SAVE_SLOTS = ["slot-1", "slot-2", "slot-3"] as const;
+
 export function GameShell() {
   const [saveError, setSaveError] = useState<string | null>(null);
+  const previousCorrectRowsRef = useRef(0);
+
   const phase = useGameStore((state) => state.phase);
   const seed = useGameStore((state) => state.runIdentity?.seed ?? null);
   const startNewGame = useGameStore((state) => state.startNewGame);
-  const bookLocations = useGameStore((state) => state.bookLocations);
-  const carriedCount = useGameStore((state) => state.carriedBookIds.length);
-  const unlockedMinorMagicIds = useGameStore((state) => state.unlockedMinorMagicIds);
-  const collectedKeyCount = useGameStore((state) => state.collectedKeyIds.length);
-  const correctRows = getCorrectRowCount(bookLocations);
-  const carryCapacity = getCarryCapacity({ unlockedMinorMagicIds });
   const saveToSlot = useGameStore((state) => state.saveToSlot);
   const loadFromSlot = useGameStore((state) => state.loadFromSlot);
+  const setAutosaveEnabled = useGameStore(
+    (state) => state.setAutosaveEnabled,
+  );
+  const bookLocations = useGameStore((state) => state.bookLocations);
+  const carriedCount = useGameStore((state) => state.carriedBookIds.length);
+  const unlockedMinorMagicIds = useGameStore(
+    (state) => state.unlockedMinorMagicIds,
+  );
+  const collectedKeyCount = useGameStore(
+    (state) => state.collectedKeyIds.length,
+  );
+  const autosaveEnabled = useGameStore((state) => state.autosaveEnabled);
+
+  const correctRows = getCorrectRowCount(bookLocations);
+  const carryCapacity = getCarryCapacity({ unlockedMinorMagicIds });
+
+  useEffect(() => {
+    const previousCorrectRows = previousCorrectRowsRef.current;
+    previousCorrectRowsRef.current = correctRows;
+
+    if (
+      phase !== "sorting" ||
+      !autosaveEnabled ||
+      correctRows <= previousCorrectRows
+    ) {
+      return;
+    }
+
+    try {
+      saveToSlot("autosave");
+      setSaveError(null);
+    } catch (error) {
+      setSaveError(
+        error instanceof Error ? error.message : "Autosave operation failed",
+      );
+    }
+  }, [autosaveEnabled, correctRows, phase, saveToSlot]);
 
   const runSaveAction = (action: () => void) => {
     try {
       action();
       setSaveError(null);
     } catch (error) {
-      setSaveError(error instanceof Error ? error.message : "Save operation failed");
+      setSaveError(
+        error instanceof Error ? error.message : "Save operation failed",
+      );
     }
   };
 
@@ -50,24 +87,58 @@ export function GameShell() {
             <div>Phase: {phase}</div>
             <div>Correct rows: {correctRows} / 400</div>
             <div>Carrying: {carriedCount} / {carryCapacity}</div>
-            <div>Keys: {collectedKeyCount} / 4 · Minor Magic: {unlockedMinorMagicIds.length} / 4</div>
-            <div className="max-w-52 truncate">Seed: {seed ?? "none"}</div>
-            <div className="mt-2 flex justify-end gap-2">
-              <button
-                className="rounded border border-white/15 px-2 py-1 hover:bg-white/10"
-                onClick={() => runSaveAction(() => saveToSlot("quick"))}
-                type="button"
-              >
-                Save
-              </button>
-              <button
-                className="rounded border border-white/15 px-2 py-1 hover:bg-white/10"
-                onClick={() => runSaveAction(() => loadFromSlot("quick"))}
-                type="button"
-              >
-                Load
-              </button>
+            <div>
+              Keys: {collectedKeyCount} / 4 · Minor Magic:{" "}
+              {unlockedMinorMagicIds.length} / 4
             </div>
+            <div className="max-w-52 truncate">Seed: {seed ?? "none"}</div>
+
+            <label className="mt-2 flex items-center justify-end gap-2">
+              <span>Autosave</span>
+              <input
+                checked={autosaveEnabled}
+                onChange={(event) =>
+                  setAutosaveEnabled(event.currentTarget.checked)
+                }
+                type="checkbox"
+              />
+            </label>
+
+            <div className="mt-2 grid grid-cols-3 gap-1">
+              {MANUAL_SAVE_SLOTS.map((slotId, index) => (
+                <div className="flex gap-1" key={slotId}>
+                  <button
+                    className="rounded border border-white/15 px-2 py-1 hover:bg-white/10"
+                    onClick={() =>
+                      runSaveAction(() => saveToSlot(slotId))
+                    }
+                    type="button"
+                  >
+                    S{index + 1}
+                  </button>
+                  <button
+                    className="rounded border border-white/15 px-2 py-1 hover:bg-white/10"
+                    onClick={() =>
+                      runSaveAction(() => loadFromSlot(slotId))
+                    }
+                    type="button"
+                  >
+                    L{index + 1}
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <button
+              className="mt-1 rounded border border-white/15 px-2 py-1 hover:bg-white/10"
+              onClick={() =>
+                runSaveAction(() => loadFromSlot("autosave"))
+              }
+              type="button"
+            >
+              Load autosave
+            </button>
+
             {saveError ? (
               <div className="mt-2 max-w-64 text-red-300">{saveError}</div>
             ) : null}
@@ -81,9 +152,8 @@ export function GameShell() {
             </p>
             <h1 className="mt-3 text-3xl font-semibold">Enter the library</h1>
             <p className="mt-3 text-sm leading-6 text-white/65">
-              The first-person runtime is now the real game surface. Catalog,
-              deterministic scattering, shelving, progression, secrets, and saves
-              are layered onto this scene rather than built as separate prototypes.
+              Sort all 3,072 volumes into 400 correct series rows across the
+              two-floor library.
             </p>
             <button
               className="mt-5 rounded-lg bg-amber-200 px-5 py-3 font-semibold text-stone-950 transition hover:bg-amber-100"
