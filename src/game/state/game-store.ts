@@ -13,6 +13,7 @@ import { majorMagicDefinitionById, type MajorMagicId } from "@/game/content/abil
 import { getMajorMagicActiveMilliseconds, getMajorMagicCooldownMilliseconds } from "@/game/content/major-magic-tuning";
 import { shelfRows } from "@/game/layout/shelf-rows";
 import { secretDefinitions } from "@/game/content/secrets";
+import { fixedTutorialBookPlacements } from "@/game/content/tutorial-series";
 
 import {
   initialGameState,
@@ -186,6 +187,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       seed: runSeed,
       books: bookInstances,
       spawnSlotIds: spawnSlots.map((spawnSlot) => spawnSlot.id),
+      fixedPlacements: fixedTutorialBookPlacements,
     });
 
     set({
