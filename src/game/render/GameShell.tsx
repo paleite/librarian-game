@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { getAvailableKnownMajorMagicPoints, getCarryCapacity, getKnownEarnedMajorMagicPoints, getSpentMajorMagicPoints } from "@/game/rules/progression";
+import { getAvailableKnownMajorMagicPoints, getCarryCapacity } from "@/game/rules/progression";
 import { majorMagicDefinitions } from "@/game/content/abilities";
 import { getCorrectRowCount } from "@/game/rules/shelf-state";
 import { useGameStore } from "@/game/state/game-store";
@@ -23,12 +23,13 @@ import { SaveSlotsPanel } from "./SaveSlotsPanel";
 import { LibraryAmbience } from "./LibraryAmbience";
 import { InteractionHud } from "./InteractionHud";
 import { MajorMagicHud } from "./MajorMagicHud";
-import { SkillPointProgress } from "./SkillPointProgress";
 import { TutorialHints } from "./TutorialHints";
 import { RecallConfirmationDialog } from "./RecallConfirmationDialog";
 import { SettingsPanel } from "./SettingsPanel";
 import { VignetteOverlay } from "./VignetteOverlay";
 import { CarriedBookList } from "./CarriedBookList";
+import { SourceProgressHud } from "./SourceProgressHud";
+import { PauseMenu } from "./PauseMenu";
 
 
 export function GameShell() {
@@ -43,10 +44,10 @@ export function GameShell() {
   const [savesOpen, setSavesOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [carriedListOpen, setCarriedListOpen] = useState(false);
+  const [pauseMenuOpen, setPauseMenuOpen] = useState(false);
   const previousCorrectRowsRef = useRef(0);
 
   const phase = useGameStore((state) => state.phase);
-  const seed = useGameStore((state) => state.runIdentity?.seed ?? null);
   const startNewGame = useGameStore((state) => state.startNewGame);
   const startSpecialStage = useGameStore((state) => state.startSpecialStage);
   const returnToTitle = useGameStore((state) => state.returnToTitle);
@@ -69,9 +70,6 @@ export function GameShell() {
   const unlockedMinorMagicIds = useGameStore(
     (state) => state.unlockedMinorMagicIds,
   );
-  const collectedKeyCount = useGameStore(
-    (state) => state.collectedKeyIds.length,
-  );
   const autosaveEnabled = useGameStore((state) => state.autosaveEnabled);
   const majorMagicLevels = useGameStore((state) => state.majorMagicLevels);
   const upgradeMajorMagic = useGameStore((state) => state.upgradeMajorMagic);
@@ -86,13 +84,13 @@ export function GameShell() {
   ]
     .map((value) => String(value).padStart(2, "0"))
     .join(":");
+  const bookLocationValues = Object.values(bookLocations);
+  const shelvedBooks = bookLocationValues.filter(
+    (location) => location.kind === "shelf",
+  ).length;
   const allBooksShelved =
-    Object.values(bookLocations).length === 3072 &&
-    Object.values(bookLocations).every(
-      (location) => location.kind === "shelf",
-    );
-  const knownEarnedMagicPoints = getKnownEarnedMajorMagicPoints(correctRows);
-  const spentMagicPoints = getSpentMajorMagicPoints(majorMagicLevels);
+    bookLocationValues.length === 3072 &&
+    shelvedBooks === 3072;
   const availableMagicPoints = getAvailableKnownMajorMagicPoints(
     correctRows,
     majorMagicLevels,
@@ -110,7 +108,7 @@ export function GameShell() {
         setUnlockedAchievementIds(profile.unlockedAchievementIds);
       }, 0);
     }
-  }, [keyBindings, phase]);
+  }, [phase]);
 
   useEffect(() => {
     const handleAchievementUnlocked = (event: Event) => {
@@ -137,6 +135,22 @@ export function GameShell() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (phase !== "sorting" && phase !== "special-stage") {
+        return;
+      }
+
+      if (event.code === "Escape" && !event.repeat) {
+        event.preventDefault();
+        playerInput.clearMove();
+
+        if (document.pointerLockElement) {
+          document.exitPointerLock();
+        }
+
+        setPauseMenuOpen(true);
+        return;
+      }
+
       if (phase !== "sorting") {
         return;
       }
@@ -169,7 +183,7 @@ export function GameShell() {
     window.addEventListener("keydown", handleKeyDown);
 
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [phase]);
+  }, [keyBindings, phase]);
 
   useEffect(() => {
     const previousCorrectRows = previousCorrectRowsRef.current;
@@ -229,6 +243,31 @@ export function GameShell() {
           onClose={() => setSettingsOpen(false)}
         />
       ) : null}
+      {pauseMenuOpen ? (
+        <PauseMenu
+          onAchievements={() => {
+            setPauseMenuOpen(false);
+            setAchievementsOpen(true);
+          }}
+          onResume={() => {
+            setPauseMenuOpen(false);
+            const canvas = document.querySelector("canvas");
+            void canvas?.requestPointerLock?.();
+          }}
+          onReturnToTitle={() => {
+            setPauseMenuOpen(false);
+            returnToTitle();
+          }}
+          onSaveLoad={() => {
+            setPauseMenuOpen(false);
+            setSavesOpen(true);
+          }}
+          onSettings={() => {
+            setPauseMenuOpen(false);
+            setSettingsOpen(true);
+          }}
+        />
+      ) : null}
       {savesOpen ? (
         <SaveSlotsPanel
           canSave={phase === "sorting"}
@@ -247,7 +286,16 @@ export function GameShell() {
       ) : null}
       <InteractionHud />
       <MajorMagicHud />
-      <SkillPointProgress />
+      {(phase === "sorting" || phase === "special-stage") ? (
+        <SourceProgressHud
+          carryCapacity={carryCapacity}
+          carriedCount={carriedCount}
+          correctRows={correctRows}
+          cozyMode={cozyMode}
+          elapsedText={elapsedText}
+          shelvedBooks={shelvedBooks}
+        />
+      ) : null}
       <TutorialHints />
       <RecallConfirmationDialog />
       <div className="absolute inset-0">
@@ -261,57 +309,6 @@ export function GameShell() {
       <VignetteOverlay />
 
       <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-between p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="desktop-game-hud rounded-lg border border-white/10 bg-black/55 px-3 py-2 text-sm text-white backdrop-blur">
-            <div className="font-medium">Librarian Game</div>
-            <div className="text-white/60">
-              WASD · Space jump · Q drop / hold Q drop stack · Esc releases
-            </div>
-          </div>
-
-          <div className="desktop-game-hud pointer-events-auto rounded-lg border border-white/10 bg-black/55 px-3 py-2 text-right text-xs text-white/70 backdrop-blur">
-            <div>Phase: {phase}</div>
-            {phase === "special-stage" ? (
-              <div>
-                Ultimate: {specialStageUltimateStartedAt === null
-                  ? "Press Z"
-                  : `${specialStagePlacedCount}/3072`}
-              </div>
-            ) : null}
-            {!cozyMode ? <div>Time: {elapsedText}</div> : null}
-            <div>Correct rows: {correctRows} / 400</div>
-            <div>Major Magic points: {availableMagicPoints} available · {spentMagicPoints}/{knownEarnedMagicPoints} spent/known earned</div>
-            <div>Carrying: {carriedCount} / {carryCapacity}</div>
-            <div>
-              Keys: {collectedKeyCount} / 4 · Minor Magic:{" "}
-              {unlockedMinorMagicIds.length} / 4
-            </div>
-            <div className="max-w-52 truncate">Seed: {seed ?? "none"}</div>
-
-            <button
-              className="mt-2 rounded border border-white/15 px-3 py-1.5 hover:bg-white/10"
-              onClick={() => setSettingsOpen(true)}
-              type="button"
-            >
-              Settings
-            </button>
-
-            {phase === "sorting" ? (
-              <button
-                className="mt-2 rounded border border-white/15 px-3 py-1.5 hover:bg-white/10"
-                onClick={() => setSavesOpen(true)}
-                type="button"
-              >
-                Save / Load
-              </button>
-            ) : null}
-
-            {saveError ? (
-              <div className="mt-2 max-w-64 text-red-300">{saveError}</div>
-            ) : null}
-          </div>
-        </div>
-
         {placementFeedback && phase === "sorting" ? (
           <div className="pointer-events-none absolute left-1/2 top-20 -translate-x-1/2 rounded-full border border-white/15 bg-black/65 px-4 py-2 text-sm font-medium text-white backdrop-blur">
             {placementFeedback === "exact"
@@ -548,7 +545,13 @@ export function GameShell() {
             cozyMode={cozyMode}
           />
 
-          {!mobileMenuOpen && !magicMenuOpen ? (
+          {!mobileMenuOpen &&
+          !magicMenuOpen &&
+          !pauseMenuOpen &&
+          !settingsOpen &&
+          !savesOpen &&
+          !achievementsOpen &&
+          !carriedListOpen ? (
             <MobileControls
               onOpenMenu={() => {
                 playerInput.clearMove();
