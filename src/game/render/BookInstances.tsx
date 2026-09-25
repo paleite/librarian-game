@@ -5,6 +5,7 @@ import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 
 import { shelfRowTransformById } from "@/game/layout/shelf-row-transforms";
+import { playPickupCue } from "@/game/audio/sfx";
 import { spawnSlotById } from "@/game/layout/spawn-slots";
 import { bookInstances } from "@/game/run/book-instances";
 import { useGameStore } from "@/game/state/game-store";
@@ -189,6 +190,7 @@ export function BookInstances({ onInspectBook }: BookInstancesProps) {
 
           onInspectBook(null);
           pickUpBook(target.book.id);
+          playPickupCue();
         },
       }}
       onPointerMove={(event) => onInspectBook(getTargetBookId(event))}
@@ -203,6 +205,7 @@ export function BookInstances({ onInspectBook }: BookInstancesProps) {
         event.stopPropagation();
         onInspectBook(null);
         pickUpBook(bookId);
+        playPickupCue();
       }}
     >
       <boxGeometry args={[1, 1, 1]} />
