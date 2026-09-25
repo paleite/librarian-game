@@ -222,12 +222,27 @@ export function PlayerController() {
     }
 
     if (frameInput.interactQueued) {
-      const interaction = interactionRaycaster.current
-        .intersectObjects(scene.children, true)
-        .find(
-          (intersection) =>
-            typeof intersection.object.userData.mobileInteract === "function",
-        );
+      const intersections = interactionRaycaster.current.intersectObjects(
+        scene.children,
+        true,
+      );
+      const carryingBook =
+        useGameStore.getState().carriedBookIds.length > 0;
+
+      const interaction = carryingBook
+        ? intersections.find(
+            (intersection) =>
+              typeof intersection.object.userData.targetShelfRowId === "string" &&
+              typeof intersection.object.userData.mobileInteract === "function",
+          ) ??
+          intersections.find(
+            (intersection) =>
+              typeof intersection.object.userData.mobileInteract === "function",
+          )
+        : intersections.find(
+            (intersection) =>
+              typeof intersection.object.userData.mobileInteract === "function",
+          );
 
       if (interaction) {
         const mobileInteract = interaction.object.userData.mobileInteract as (
