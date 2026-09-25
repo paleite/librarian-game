@@ -16,6 +16,7 @@ export function GameShell() {
   const bookLocations = useGameStore((state) => state.bookLocations);
   const carriedCount = useGameStore((state) => state.carriedBookIds.length);
   const unlockedMinorMagicIds = useGameStore((state) => state.unlockedMinorMagicIds);
+  const collectedKeyCount = useGameStore((state) => state.collectedKeyIds.length);
   const correctRows = getCorrectRowCount(bookLocations);
   const carryCapacity = getCarryCapacity({ unlockedMinorMagicIds });
   const saveToSlot = useGameStore((state) => state.saveToSlot);
@@ -49,6 +50,7 @@ export function GameShell() {
             <div>Phase: {phase}</div>
             <div>Correct rows: {correctRows} / 400</div>
             <div>Carrying: {carriedCount} / {carryCapacity}</div>
+            <div>Keys: {collectedKeyCount} / 4 · Minor Magic: {unlockedMinorMagicIds.length} / 4</div>
             <div className="max-w-52 truncate">Seed: {seed ?? "none"}</div>
             <div className="mt-2 flex justify-end gap-2">
               <button
