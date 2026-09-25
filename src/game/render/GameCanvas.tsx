@@ -4,6 +4,8 @@ import { Canvas } from "@react-three/fiber";
 import { Physics } from "@react-three/rapier";
 
 import { LibraryScene } from "./LibraryScene";
+import { BookInstances } from "./BookInstances";
+import { CarriedBooks } from "./CarriedBooks";
 import { PlayerController } from "./PlayerController";
 
 export function GameCanvas() {
@@ -26,6 +28,8 @@ export function GameCanvas() {
 
       <Physics gravity={[0, -20, 0]}>
         <LibraryScene />
+        <BookInstances />
+        <CarriedBooks />
         <PlayerController />
       </Physics>
     </Canvas>
