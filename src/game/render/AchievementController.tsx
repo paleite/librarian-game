@@ -32,7 +32,7 @@ function evaluateAchievements(): AchievementId[] {
     unlocks.push("grand");
   }
 
-  if (state.majorMagicUsageCount > 0) {
+  if (majorMagicIds.some((id) => state.majorMagicLevels[id] > 0)) {
     unlocks.push("novice-mage");
   }
 
@@ -66,7 +66,11 @@ function evaluateAchievements(): AchievementId[] {
       unlocks.push("efficiency");
     }
 
-    if (state.majorMagicUsageCount === 0) {
+    const hasUnlockedMajorMagic = majorMagicIds.some(
+      (id) => state.majorMagicLevels[id] > 0,
+    );
+
+    if (!hasUnlockedMajorMagic && state.majorMagicUsageCount === 0) {
       unlocks.push("anti-magic");
     }
   }
