@@ -170,12 +170,35 @@ export function PlayerController() {
       }
     };
 
+    const handleWheel = (event: WheelEvent) => {
+      if (!document.pointerLockElement) {
+        return;
+      }
+
+      const state = useGameStore.getState();
+      const count = state.carriedBookIds.length;
+
+      if (count < 2 || event.deltaY === 0) {
+        return;
+      }
+
+      event.preventDefault();
+
+      if (event.deltaY > 0) {
+        state.reorderCarriedBook(count - 1, 0);
+      } else {
+        state.reorderCarriedBook(0, count - 1);
+      }
+    };
+
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("wheel", handleWheel, { passive: false });
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("wheel", handleWheel);
     };
   }, []);
 
