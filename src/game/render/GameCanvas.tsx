@@ -24,12 +24,10 @@ import { ShelfFurniture } from "./ShelfFurniture";
 import { FloorMaps } from "./FloorMaps";
 
 export interface GameCanvasProps {
-  onInspectBook: (bookId: string | null) => void;
   onPlacementFeedback: (feedback: PlacementFeedback) => void;
 }
 
 export function GameCanvas({
-  onInspectBook,
   onPlacementFeedback,
 }: GameCanvasProps) {
   const coarsePointer = useCoarsePointer();
@@ -56,7 +54,7 @@ export function GameCanvas({
         <SectionPlaques />
         <SecretObjects />
         <RecallStone />
-        <BookInstances onInspectBook={onInspectBook} />
+        <BookInstances />
         <BookLabels />
         <CarriedBooks />
         <PlayerController />
