@@ -30,7 +30,7 @@ function StairVase() {
     <RigidBody
       type="fixed"
       colliders="cuboid"
-      position={[2.7, 0.82, 35.8]}
+      position={[4.55, 1.02, 35.6]}
     >
       <group>
         <mesh position={[0, 0.16, 0]}>
@@ -52,7 +52,7 @@ function ScaleTable() {
       <RigidBody
         type="fixed"
         colliders="cuboid"
-        position={[-2.65, 0.7, 8.2]}
+        position={[-2.65, 0.7, 22.6]}
       >
         <mesh scale={[2.5, 0.16, 1.45]} castShadow receiveShadow>
           <boxGeometry args={[1, 1, 1]} />
@@ -60,7 +60,7 @@ function ScaleTable() {
         </mesh>
       </RigidBody>
 
-      <group position={[-2.65, 1.02, 8.2]}>
+      <group position={[-2.65, 1.02, 22.6]}>
         <mesh position={[0, 0.22, 0]}>
           <cylinderGeometry args={[0.055, 0.07, 0.46, 12]} />
           <meshStandardMaterial color="#9a7b46" metalness={0.5} roughness={0.35} />
@@ -86,13 +86,13 @@ function EmeraldBenchPile() {
   const pileBooks = Array.from({ length: 14 }, (_, index) => ({
     x: -3.8 + ((index % 4) - 1.5) * 0.22,
     y: 1.04 + Math.floor(index / 4) * 0.065,
-    z: 8 + ((index * 7) % 5 - 2) * 0.07,
+    z: 22.7 + ((index * 7) % 5 - 2) * 0.07,
     yaw: ((index * 37) % 100) / 100 - 0.5,
   }));
 
   return (
     <group>
-      <RigidBody type="fixed" colliders="cuboid" position={[-3.8, 0.62, 8]}>
+      <RigidBody type="fixed" colliders="cuboid" position={[-3.8, 0.62, 22.7]}>
         <mesh scale={[1.9, 0.25, 0.78]} castShadow receiveShadow>
           <boxGeometry args={[1, 1, 1]} />
           <meshStandardMaterial color="#5a3923" roughness={0.84} />
