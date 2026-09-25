@@ -53,7 +53,16 @@ export function SecretObjects() {
               <mesh
                 position={transforms.keyTransform.position}
                 rotation={transforms.keyTransform.rotation}
-                userData={{ mobileInteract: collectKey }}
+                userData={{
+                  getInteractionInfo: () => ({
+                    title: secret.keyId
+                      .split("-")
+                      .map((part) => part[0]?.toUpperCase() + part.slice(1))
+                      .join(" "),
+                    action: "Collect key",
+                  }),
+                  mobileInteract: collectKey,
+                }}
                 onPointerDown={(event) => {
                   event.stopPropagation();
                   collectKey();
@@ -74,7 +83,21 @@ export function SecretObjects() {
               position={transforms.chestTransform.position}
               rotation={transforms.chestTransform.rotation}
               scale={[0.72, 0.42, 0.52]}
-              userData={{ mobileInteract: openChest }}
+              userData={{
+                getInteractionInfo: () => ({
+                  title: `${secret.keyId
+                    .split("-")
+                    .map((part) => part[0]?.toUpperCase() + part.slice(1))
+                    .join(" ")} Chest`,
+                  subtitle: hasKey
+                    ? unlocked
+                      ? "Opened"
+                      : "Matching key acquired"
+                    : "Requires matching key",
+                  action: hasKey && !unlocked ? "Open chest" : undefined,
+                }),
+                mobileInteract: openChest,
+              }}
               onPointerDown={(event) => {
                 event.stopPropagation();
                 openChest();
