@@ -15,6 +15,7 @@ export interface GameState {
   elapsedMilliseconds: number;
   majorMagicUsageCount: number;
   cozyMode: boolean;
+  autosaveEnabled: boolean;
 }
 
 export interface BookMovementActions {
@@ -39,4 +40,5 @@ export const initialGameState: GameState = {
   elapsedMilliseconds: 0,
   majorMagicUsageCount: 0,
   cozyMode: false,
+  autosaveEnabled: true,
 };
