@@ -24,6 +24,7 @@ import { LibraryAmbience } from "./LibraryAmbience";
 import { InteractionHud } from "./InteractionHud";
 import { MajorMagicHud } from "./MajorMagicHud";
 import { SkillPointProgress } from "./SkillPointProgress";
+import { TutorialHints } from "./TutorialHints";
 import { SettingsPanel } from "./SettingsPanel";
 import { VignetteOverlay } from "./VignetteOverlay";
 import { TutorialPrompts } from "./TutorialPrompts";
@@ -247,6 +248,7 @@ export function GameShell() {
       <InteractionHud />
       <MajorMagicHud />
       <SkillPointProgress />
+      <TutorialHints />
       <TutorialPrompts />
       <div className="absolute inset-0">
         <GameCanvas
