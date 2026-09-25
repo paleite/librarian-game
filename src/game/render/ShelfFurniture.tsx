@@ -138,6 +138,7 @@ export function ShelfFurniture() {
       <instancedMesh
         ref={backMeshRef}
         args={[undefined, undefined, shelfRowTransforms.length]}
+        frustumCulled={false}
         castShadow
         receiveShadow
       >
@@ -148,6 +149,7 @@ export function ShelfFurniture() {
       <instancedMesh
         ref={boardMeshRef}
         args={[undefined, undefined, shelfRowTransforms.length]}
+        frustumCulled={false}
         castShadow
         receiveShadow
       >
