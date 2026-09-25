@@ -8,6 +8,7 @@ import { BookInstances } from "./BookInstances";
 import { CarriedBooks } from "./CarriedBooks";
 import { ShelfTargets } from "./ShelfTargets";
 import { SecretObjects } from "./SecretObjects";
+import { RecallStone } from "./RecallStone";
 import { PlayerController } from "./PlayerController";
 
 export function GameCanvas() {
@@ -32,6 +33,7 @@ export function GameCanvas() {
         <LibraryScene />
         <ShelfTargets />
         <SecretObjects />
+        <RecallStone />
         <BookInstances />
         <CarriedBooks />
         <PlayerController />
