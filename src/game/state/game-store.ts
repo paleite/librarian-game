@@ -5,7 +5,7 @@ import { create } from "zustand";
 import { bookInstances } from "@/game/run/book-instances";
 import { generateInitialRun, CATALOG_VERSION, LAYOUT_VERSION } from "@/game/run/generate-run";
 import { spawnSlots } from "@/game/layout/spawn-slots";
-import type { BookLocation, Transform3 } from "@/game/run/types";
+import type { BookLocation } from "@/game/run/types";
 import { readSaveSlot, writeSaveSlot } from "@/game/save/storage";
 import { getCarryCapacity } from "@/game/rules/progression";
 import { secretDefinitions } from "@/game/content/secrets";
