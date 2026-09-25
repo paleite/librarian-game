@@ -7,6 +7,7 @@ import { LibraryScene } from "./LibraryScene";
 import { BookInstances } from "./BookInstances";
 import { CarriedBooks } from "./CarriedBooks";
 import { ShelfTargets } from "./ShelfTargets";
+import { SecretObjects } from "./SecretObjects";
 import { PlayerController } from "./PlayerController";
 
 export function GameCanvas() {
@@ -30,6 +31,7 @@ export function GameCanvas() {
       <Physics gravity={[0, -20, 0]}>
         <LibraryScene />
         <ShelfTargets />
+        <SecretObjects />
         <BookInstances />
         <CarriedBooks />
         <PlayerController />
