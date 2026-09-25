@@ -6,6 +6,7 @@ import { Physics } from "@react-three/rapier";
 import { LibraryScene } from "./LibraryScene";
 import { BookInstances } from "./BookInstances";
 import { CarriedBooks } from "./CarriedBooks";
+import { ShelfTargets } from "./ShelfTargets";
 import { PlayerController } from "./PlayerController";
 
 export function GameCanvas() {
@@ -28,6 +29,7 @@ export function GameCanvas() {
 
       <Physics gravity={[0, -20, 0]}>
         <LibraryScene />
+        <ShelfTargets />
         <BookInstances />
         <CarriedBooks />
         <PlayerController />
