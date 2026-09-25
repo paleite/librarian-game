@@ -11,7 +11,11 @@ import type { PlacementFeedback } from "@/game/rules/placement-feedback";
 import { readProfileState } from "@/game/save/profile";
 import { SPECIAL_STAGE_ULTIMATE_DURATION_MILLISECONDS } from "@/game/modes/special-stage";
 
+import { playerInput } from "@/game/input/player-input";
+
 import { GameCanvas } from "./GameCanvas";
+import { MobileControls } from "./MobileControls";
+import { MobileHud } from "./MobileHud";
 
 const MANUAL_SAVE_SLOTS = ["slot-1", "slot-2", "slot-3"] as const;
 
@@ -20,6 +24,7 @@ export function GameShell() {
   const [inspectedBookId, setInspectedBookId] = useState<string | null>(null);
   const [placementFeedback, setPlacementFeedback] = useState<PlacementFeedback | null>(null);
   const [magicMenuOpen, setMagicMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [specialStageUnlocked, setSpecialStageUnlocked] = useState(false);
   const previousCorrectRowsRef = useRef(0);
 
@@ -161,14 +166,14 @@ export function GameShell() {
 
       <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-between p-5">
         <div className="flex items-start justify-between gap-4">
-          <div className="rounded-lg border border-white/10 bg-black/55 px-3 py-2 text-sm text-white backdrop-blur">
+          <div className="desktop-game-hud rounded-lg border border-white/10 bg-black/55 px-3 py-2 text-sm text-white backdrop-blur">
             <div className="font-medium">Librarian Game</div>
             <div className="text-white/60">
               WASD · Space jump · Q drop / hold Q drop stack · Esc releases
             </div>
           </div>
 
-          <div className="pointer-events-auto rounded-lg border border-white/10 bg-black/55 px-3 py-2 text-right text-xs text-white/70 backdrop-blur">
+          <div className="desktop-game-hud pointer-events-auto rounded-lg border border-white/10 bg-black/55 px-3 py-2 text-right text-xs text-white/70 backdrop-blur">
             <div>Phase: {phase}</div>
             {phase === "special-stage" ? (
               <div>
@@ -463,9 +468,144 @@ export function GameShell() {
             </div>
           </div>
         ) : (
-          <div className="mx-auto mb-6 h-2 w-2 rounded-full bg-white/85 shadow-[0_0_8px_rgba(255,255,255,0.65)]" />
+          <div className="pointer-events-none absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/85 shadow-[0_0_8px_rgba(255,255,255,0.65)]" />
         )}
       </div>
+      {(phase === "sorting" || phase === "special-stage") ? (
+        <>
+          <MobileHud
+            correctRows={correctRows}
+            carriedCount={carriedCount}
+            carryCapacity={carryCapacity}
+            elapsedText={elapsedText}
+            cozyMode={cozyMode}
+          />
+
+          {!mobileMenuOpen && !magicMenuOpen ? (
+            <MobileControls
+              onOpenMenu={() => {
+                playerInput.clearMove();
+                setMobileMenuOpen(true);
+              }}
+            />
+          ) : null}
+
+          {mobileMenuOpen ? (
+            <div className="mobile-game-menu pointer-events-auto absolute inset-0 z-40 flex items-end bg-black/45 p-[max(12px,env(safe-area-inset-bottom))] backdrop-blur-sm">
+              <div className="mx-auto w-full max-w-md rounded-2xl border border-white/15 bg-stone-950/95 p-5 text-white shadow-2xl">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-300">
+                      Game menu
+                    </div>
+                    <div className="mt-1 text-sm text-white/55">
+                      {correctRows}/400 rows · {carriedCount}/{carryCapacity} carried
+                    </div>
+                  </div>
+                  <button
+                    className="min-h-11 min-w-11 rounded-xl border border-white/15 px-3 text-sm"
+                    onClick={() => setMobileMenuOpen(false)}
+                    type="button"
+                  >
+                    Close
+                  </button>
+                </div>
+
+                <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
+                  <label className="flex min-h-12 items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] px-3">
+                    <span>Cozy</span>
+                    <input
+                      checked={cozyMode}
+                      onChange={(event) =>
+                        setCozyMode(event.currentTarget.checked)
+                      }
+                      type="checkbox"
+                    />
+                  </label>
+
+                  <label className="flex min-h-12 items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] px-3">
+                    <span>Autosave</span>
+                    <input
+                      checked={autosaveEnabled}
+                      onChange={(event) =>
+                        setAutosaveEnabled(event.currentTarget.checked)
+                      }
+                      type="checkbox"
+                    />
+                  </label>
+                </div>
+
+                {phase === "sorting" ? (
+                  <>
+                    <div className="mt-4 grid grid-cols-3 gap-2">
+                      {MANUAL_SAVE_SLOTS.map((slotId, index) => (
+                        <div className="grid gap-1" key={slotId}>
+                          <button
+                            className="min-h-11 rounded-xl border border-white/15 bg-white/[0.04] text-sm"
+                            onClick={() =>
+                              runSaveAction(() => saveToSlot(slotId))
+                            }
+                            type="button"
+                          >
+                            Save {index + 1}
+                          </button>
+                          <button
+                            className="min-h-11 rounded-xl border border-white/15 bg-white/[0.04] text-sm"
+                            onClick={() =>
+                              runSaveAction(() => loadFromSlot(slotId))
+                            }
+                            type="button"
+                          >
+                            Load {index + 1}
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+
+                    <button
+                      className="mt-2 min-h-11 w-full rounded-xl border border-white/15 bg-white/[0.04] text-sm"
+                      onClick={() =>
+                        runSaveAction(() => loadFromSlot("autosave"))
+                      }
+                      type="button"
+                    >
+                      Load autosave
+                    </button>
+
+                    <button
+                      className="mt-3 min-h-12 w-full rounded-xl border border-violet-300/20 bg-violet-400/10 text-sm font-semibold text-violet-100"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        setMagicMenuOpen(true);
+                      }}
+                      type="button"
+                    >
+                      Major Magic · {availableMagicPoints} point{availableMagicPoints === 1 ? "" : "s"} available
+                    </button>
+                  </>
+                ) : null}
+
+                {saveError ? (
+                  <div className="mt-3 text-sm text-red-300">{saveError}</div>
+                ) : null}
+
+                <button
+                  className="mt-4 min-h-12 w-full rounded-xl border border-white/15 text-sm text-white/75"
+                  onClick={() => {
+                    playerInput.clearMove();
+                    setMobileMenuOpen(false);
+                    returnToTitle();
+                  }}
+                  type="button"
+                >
+                  Return to title
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </>
+      ) : null}
+
     </main>
   );
 }
