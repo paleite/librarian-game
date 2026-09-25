@@ -18,6 +18,7 @@ import { ExitDoor } from "./ExitDoor";
 import { GameClock } from "./GameClock";
 import { SpecialStageController } from "./SpecialStageController";
 import { LibraryLighting } from "./LibraryLighting";
+import { AchievementController } from "./AchievementController";
 
 export interface GameCanvasProps {
   onInspectBook: (bookId: string | null) => void;
@@ -42,6 +43,7 @@ export function GameCanvas({
 
       <Physics gravity={[0, -20, 0]}>
         <GameClock />
+        <AchievementController />
         <SpecialStageController />
         <LibraryScene />
         <ExitDoor />
