@@ -110,3 +110,37 @@ export function playAchievementCue() {
   tone(1100, 0.18, 0.03, "triangle", 0.16);
   pulseDevice(35);
 }
+
+
+let footstepAlternator = false;
+
+export function playFootstepCue(sprinting = false) {
+  footstepAlternator = !footstepAlternator;
+
+  tone(
+    footstepAlternator ? 118 : 103,
+    sprinting ? 0.055 : 0.07,
+    sprinting ? 0.018 : 0.014,
+    "triangle",
+  );
+  tone(
+    footstepAlternator ? 74 : 68,
+    sprinting ? 0.045 : 0.06,
+    sprinting ? 0.012 : 0.009,
+    "sine",
+    0.01,
+  );
+}
+
+export function playBookDropCue(count = 1) {
+  const strength = Math.min(1, 0.35 + count * 0.08);
+
+  tone(92, 0.11, 0.026 * strength, "triangle");
+  tone(61, 0.15, 0.018 * strength, "sine", 0.015);
+
+  if (count >= 4) {
+    tone(116, 0.09, 0.012 * strength, "triangle", 0.07);
+  }
+
+  pulseDevice(Math.min(34, 8 + count * 2));
+}
