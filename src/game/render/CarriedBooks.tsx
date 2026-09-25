@@ -5,6 +5,9 @@ import { useMemo, useRef } from "react";
 import * as THREE from "three";
 
 import { bookInstances } from "@/game/run/book-instances";
+import { getStableBookColor } from "@/game/render/book-visuals";
+
+import { BookLabelPlane } from "./BookLabelPlane";
 import { useGameStore } from "@/game/state/game-store";
 
 const bookById = new Map(bookInstances.map((book) => [book.id, book]));
@@ -49,7 +52,14 @@ export function CarriedBooks() {
           scale={[0.24, 0.055, 0.34]}
         >
           <boxGeometry args={[1, 1, 1]} />
-          <meshStandardMaterial color="#8c7055" roughness={0.75} />
+          <meshStandardMaterial
+            color={getStableBookColor(book.seriesId, book.sectionCode)}
+            roughness={0.75}
+          />
+          <BookLabelPlane
+            title={book.title}
+            volumeNumber={book.volumeNumber}
+          />
         </mesh>
       ))}
     </group>
