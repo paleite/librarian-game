@@ -12,6 +12,7 @@ import type { AchievementId } from "@/game/content/achievements";
 import { SPECIAL_STAGE_ULTIMATE_DURATION_MILLISECONDS } from "@/game/modes/special-stage";
 
 import { playerInput } from "@/game/input/player-input";
+import { useGameSettings } from "@/game/settings/game-settings";
 
 import { GameCanvas } from "./GameCanvas";
 import { MobileControls } from "./MobileControls";
@@ -30,6 +31,7 @@ import { CarriedBookList } from "./CarriedBookList";
 
 
 export function GameShell() {
+  const { keyBindings } = useGameSettings();
   const [saveError, setSaveError] = useState<string | null>(null);
   const [placementFeedback, setPlacementFeedback] = useState<PlacementFeedback | null>(null);
   const [magicMenuOpen, setMagicMenuOpen] = useState(false);
@@ -108,7 +110,7 @@ export function GameShell() {
         setUnlockedAchievementIds(profile.unlockedAchievementIds);
       }, 0);
     }
-  }, [phase]);
+  }, [keyBindings, phase]);
 
   useEffect(() => {
     const handleAchievementUnlocked = (event: Event) => {
@@ -139,7 +141,7 @@ export function GameShell() {
         return;
       }
 
-      if (event.code === "Tab") {
+      if (event.code === keyBindings.magicMenu) {
         event.preventDefault();
         setMagicMenuOpen((open) => {
           const nextOpen = !open;
@@ -153,7 +155,7 @@ export function GameShell() {
         return;
       }
 
-      if (event.code === "KeyR" && !event.repeat) {
+      if (event.code === keyBindings.bookList && !event.repeat) {
         event.preventDefault();
 
         if (document.pointerLockElement) {
