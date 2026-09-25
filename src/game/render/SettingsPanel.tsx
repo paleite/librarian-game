@@ -143,6 +143,33 @@ export function SettingsPanel({
           <label className="block rounded-xl border border-white/10 bg-white/[0.035] p-4">
             <div className="flex items-center justify-between gap-4">
               <div>
+                <div className="font-semibold">Look Sensitivity</div>
+                <div className="mt-1 text-xs text-white/45">
+                  Mouse and right-stick camera speed
+                </div>
+              </div>
+              <div className="text-sm font-semibold">
+                {settings.lookSensitivity.toFixed(2)}×
+              </div>
+            </div>
+            <input
+              className="mt-3 w-full"
+              max={2}
+              min={0.25}
+              onChange={(event) =>
+                updateGameSettings({
+                  lookSensitivity: Number(event.currentTarget.value),
+                })
+              }
+              step={0.05}
+              type="range"
+              value={settings.lookSensitivity}
+            />
+          </label>
+
+          <label className="block rounded-xl border border-white/10 bg-white/[0.035] p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
                 <div className="font-semibold">Render Scale</div>
                 <div className="mt-1 text-xs text-white/45">
                   Browser renderer resolution scale
