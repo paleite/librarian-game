@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { majorMagicIds, minorMagicIds } from "@/game/content/abilities";
+import { minorMagicIds } from "@/game/content/abilities";
 import { secretKeyIds } from "@/game/content/secrets";
 
 const Transform3Schema = z.object({
@@ -34,8 +34,16 @@ const RunIdentitySchema = z.object({
   layoutVersion: z.number().int().positive(),
 });
 
+const MajorMagicLevelsSchema = z.object({
+  sort: z.number().int().min(0).max(5),
+  "shelf-guide": z.number().int().min(0).max(10),
+  insight: z.number().int().min(0).max(10),
+  "auto-shelving": z.number().int().min(0).max(10),
+  assemble: z.number().int().min(0).max(10),
+});
+
 export const SavePayloadSchema = z.object({
-  saveVersion: z.literal(2),
+  saveVersion: z.literal(3),
   savedAt: z.string().datetime(),
   state: z.object({
     phase: z.enum(["title", "sorting", "completed"]),
@@ -43,7 +51,7 @@ export const SavePayloadSchema = z.object({
     bookLocations: z.record(z.string(), BookLocationSchema),
     carriedBookIds: z.array(z.string()),
     collectedKeyIds: z.array(z.enum(secretKeyIds)),
-    unlockedMajorMagicIds: z.array(z.enum(majorMagicIds)),
+    majorMagicLevels: MajorMagicLevelsSchema,
     unlockedMinorMagicIds: z.array(z.enum(minorMagicIds)),
     elapsedMilliseconds: z.number().int().nonnegative(),
     majorMagicUsageCount: z.number().int().nonnegative(),
