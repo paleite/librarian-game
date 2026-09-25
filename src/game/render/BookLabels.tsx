@@ -99,6 +99,7 @@ export function BookLabels() {
           <BookLabelPlane
             title={book.title}
             volumeNumber={book.volumeNumber}
+            seriesId={book.seriesId}
           />
         </group>
       ))}
