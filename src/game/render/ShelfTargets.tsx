@@ -7,6 +7,7 @@ import * as THREE from "three";
 import { shelfRowTransformById } from "@/game/layout/shelf-row-transforms";
 import { playPlacementCue, playRowCompleteCue } from "@/game/audio/sfx";
 import { shelfRows } from "@/game/layout/shelf-rows";
+import { sections } from "@/game/catalog/sections";
 import {
   getPlacementFeedback,
   type PlacementFeedback,
@@ -99,6 +100,10 @@ export function ShelfTargets({
   }, [bookLocations]);
 
   const topCarriedBookId = carriedBookIds.at(-1);
+  const sectionNameByCode = useMemo(
+    () => new Map(sections.map((section) => [section.code, section.name])),
+    [],
+  );
 
   const placeAtPoint = (
     object: THREE.Object3D,
@@ -176,6 +181,34 @@ export function ShelfTargets({
             rotation={rowTransform.transform.rotation}
             userData={{
               targetShelfRowId: row.id,
+              getInteractionInfo: () => ({
+                title: `${row.sectionCode} · ${sectionNameByCode.get(row.sectionCode) ?? "Shelf"}`,
+                subtitle: `${row.capacity}-volume row`,
+                action: topCarriedBookId ? "Place book" : undefined,
+              }),
+              onAim: (intersection: THREE.Intersection) => {
+                setTargetedShelfRow(row.id);
+
+                if (!topCarriedBookId) {
+                  setHoveredSlot(null);
+                  return;
+                }
+
+                const index = resolveSlotIndexFromPoint(
+                  intersection.object,
+                  intersection.point,
+                  row.capacity,
+                  occupiedIndexes,
+                );
+
+                setHoveredSlot(
+                  index === null ? null : { rowId: row.id, index },
+                );
+              },
+              onAimOut: () => {
+                setHoveredSlot(null);
+                setTargetedShelfRow(null);
+              },
               mobileInteract: (intersection: THREE.Intersection) => {
                 setTargetedShelfRow(row.id);
                 placeAtPoint(
