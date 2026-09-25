@@ -41,3 +41,25 @@ export function getCorrectRowCount(
 
   return correctRows;
 }
+
+
+export function isSectionComplete(
+  sectionCode: string,
+  bookLocations: Readonly<Record<string, BookLocation>>,
+): boolean {
+  const sectionRows = shelfRows.filter((row) => row.sectionCode === sectionCode);
+
+  if (sectionRows.length === 0) {
+    return false;
+  }
+
+  return sectionRows.every((row) => {
+    const orderedBookIds = getOrderedBookIdsForRow(row.id, bookLocations);
+
+    return validateShelfRow({
+      sectionCode: row.sectionCode,
+      orderedBookIds,
+      booksById: bookById,
+    }).correct;
+  });
+}
