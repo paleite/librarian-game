@@ -5,7 +5,7 @@ import { useGameStore } from "@/game/state/game-store";
 
 export function GameShell() {
   const phase = useGameStore((state) => state.phase);
-  const seed = useGameStore((state) => state.seed);
+  const seed = useGameStore((state) => state.runIdentity?.seed ?? null);
   const startNewGame = useGameStore((state) => state.startNewGame);
 
   return (
