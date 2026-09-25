@@ -32,7 +32,16 @@ export function RecallStone() {
     <group position={[0, 0, 35.2]}>
       <mesh
         position={[0, 0.55, 0]}
-        userData={{ mobileInteract: activate }}
+        userData={{
+          getInteractionInfo: () => ({
+            title: "Recall Stone",
+            subtitle: enabled
+              ? `${unshelvedCount} unshelved books remaining`
+              : "Activates when 20 or fewer unshelved books remain",
+            action: enabled ? "Recall books" : undefined,
+          }),
+          mobileInteract: activate,
+        }}
         onPointerDown={(event) => {
           event.stopPropagation();
           activate();
