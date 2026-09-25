@@ -5,10 +5,7 @@ import { useLayoutEffect, useRef } from "react";
 import * as THREE from "three";
 
 import { shelfRows } from "@/game/layout/shelf-rows";
-import {
-  shelfRowTransformById,
-  shelfRowTransforms,
-} from "@/game/layout/shelf-row-transforms";
+import { shelfRowTransforms } from "@/game/layout/shelf-row-transforms";
 
 const BOARD_DEPTH = 0.48;
 const BOARD_THICKNESS = 0.075;
