@@ -26,6 +26,7 @@ import { SkillPointProgress } from "./SkillPointProgress";
 import { SettingsPanel } from "./SettingsPanel";
 import { VignetteOverlay } from "./VignetteOverlay";
 import { TutorialPrompts } from "./TutorialPrompts";
+import { CarriedBookList } from "./CarriedBookList";
 
 
 export function GameShell() {
@@ -38,6 +39,7 @@ export function GameShell() {
   const [achievementsOpen, setAchievementsOpen] = useState(false);
   const [savesOpen, setSavesOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [carriedListOpen, setCarriedListOpen] = useState(false);
   const previousCorrectRowsRef = useRef(0);
 
   const phase = useGameStore((state) => state.phase);
@@ -133,20 +135,33 @@ export function GameShell() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.code !== "Tab" || phase !== "sorting") {
+      if (phase !== "sorting") {
         return;
       }
 
-      event.preventDefault();
-      setMagicMenuOpen((open) => {
-        const nextOpen = !open;
+      if (event.code === "Tab") {
+        event.preventDefault();
+        setMagicMenuOpen((open) => {
+          const nextOpen = !open;
 
-        if (nextOpen && document.pointerLockElement) {
+          if (nextOpen && document.pointerLockElement) {
+            document.exitPointerLock();
+          }
+
+          return nextOpen;
+        });
+        return;
+      }
+
+      if (event.code === "KeyR" && !event.repeat) {
+        event.preventDefault();
+
+        if (document.pointerLockElement) {
           document.exitPointerLock();
         }
 
-        return nextOpen;
-      });
+        setCarriedListOpen((open) => !open);
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -201,6 +216,9 @@ export function GameShell() {
           unlockedAchievementIds={unlockedAchievementIds}
           onClose={() => setAchievementsOpen(false)}
         />
+      ) : null}
+      {carriedListOpen ? (
+        <CarriedBookList onClose={() => setCarriedListOpen(false)} />
       ) : null}
       {settingsOpen ? (
         <SettingsPanel
@@ -579,6 +597,17 @@ export function GameShell() {
                       type="button"
                     >
                       Save / Load
+                    </button>
+
+                    <button
+                      className="mt-3 min-h-12 w-full rounded-xl border border-white/15 bg-white/[0.04] text-sm"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        setCarriedListOpen(true);
+                      }}
+                      type="button"
+                    >
+                      Books in hand · {carriedCount}
                     </button>
 
                     <button
