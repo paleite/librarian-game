@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import { getCarryCapacity } from "@/game/rules/progression";
 import { getCorrectRowCount } from "@/game/rules/shelf-state";
 import { useGameStore } from "@/game/state/game-store";
+import { bookInstances } from "@/game/run/book-instances";
+import type { PlacementFeedback } from "@/game/rules/placement-feedback";
 
 import { GameCanvas } from "./GameCanvas";
 
@@ -12,6 +14,8 @@ const MANUAL_SAVE_SLOTS = ["slot-1", "slot-2", "slot-3"] as const;
 
 export function GameShell() {
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [inspectedBookId, setInspectedBookId] = useState<string | null>(null);
+  const [placementFeedback, setPlacementFeedback] = useState<PlacementFeedback | null>(null);
   const previousCorrectRowsRef = useRef(0);
 
   const phase = useGameStore((state) => state.phase);
@@ -34,6 +38,9 @@ export function GameShell() {
 
   const correctRows = getCorrectRowCount(bookLocations);
   const carryCapacity = getCarryCapacity({ unlockedMinorMagicIds });
+  const inspectedBook = inspectedBookId
+    ? bookInstances.find((book) => book.id === inspectedBookId) ?? null
+    : null;
 
   useEffect(() => {
     const previousCorrectRows = previousCorrectRowsRef.current;
@@ -71,7 +78,13 @@ export function GameShell() {
   return (
     <main className="relative h-dvh w-full overflow-hidden bg-black">
       <div className="absolute inset-0">
-        <GameCanvas />
+        <GameCanvas
+          onInspectBook={setInspectedBookId}
+          onPlacementFeedback={(feedback) => {
+            setPlacementFeedback(feedback);
+            window.setTimeout(() => setPlacementFeedback(null), 850);
+          }}
+        />
       </div>
 
       <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-between p-5">
@@ -144,6 +157,25 @@ export function GameShell() {
             ) : null}
           </div>
         </div>
+
+        {inspectedBook && phase === "sorting" ? (
+          <div className="pointer-events-none absolute bottom-20 left-1/2 w-[min(34rem,calc(100vw-2rem))] -translate-x-1/2 rounded-xl border border-white/15 bg-black/72 px-5 py-4 text-center text-white shadow-2xl backdrop-blur">
+            <div className="text-base font-semibold">{inspectedBook.title}</div>
+            <div className="mt-1 text-sm text-white/65">
+              Volume {inspectedBook.volumeNumber} / {inspectedBook.volumeCount}
+            </div>
+          </div>
+        ) : null}
+
+        {placementFeedback && phase === "sorting" ? (
+          <div className="pointer-events-none absolute left-1/2 top-20 -translate-x-1/2 rounded-full border border-white/15 bg-black/65 px-4 py-2 text-sm font-medium text-white backdrop-blur">
+            {placementFeedback === "exact"
+              ? "Exact placement"
+              : placementFeedback === "correct-section"
+                ? "Correct section, wrong position or row"
+                : "Wrong section"}
+          </div>
+        ) : null}
 
         {phase === "title" ? (
           <div className="pointer-events-auto mx-auto mb-10 w-full max-w-md rounded-2xl border border-white/15 bg-black/70 p-6 text-center text-white shadow-2xl backdrop-blur">
