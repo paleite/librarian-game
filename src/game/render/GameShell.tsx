@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { getCarryCapacity } from "@/game/rules/progression";
+import { getAvailableKnownMajorMagicPoints, getCarryCapacity, getKnownEarnedMajorMagicPoints, getSpentMajorMagicPoints } from "@/game/rules/progression";
+import { majorMagicDefinitions } from "@/game/content/abilities";
 import { getCorrectRowCount } from "@/game/rules/shelf-state";
 import { useGameStore } from "@/game/state/game-store";
 import { bookInstances } from "@/game/run/book-instances";
@@ -16,6 +17,7 @@ export function GameShell() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [inspectedBookId, setInspectedBookId] = useState<string | null>(null);
   const [placementFeedback, setPlacementFeedback] = useState<PlacementFeedback | null>(null);
+  const [magicMenuOpen, setMagicMenuOpen] = useState(false);
   const previousCorrectRowsRef = useRef(0);
 
   const phase = useGameStore((state) => state.phase);
@@ -35,12 +37,43 @@ export function GameShell() {
     (state) => state.collectedKeyIds.length,
   );
   const autosaveEnabled = useGameStore((state) => state.autosaveEnabled);
+  const majorMagicLevels = useGameStore((state) => state.majorMagicLevels);
+  const upgradeMajorMagic = useGameStore((state) => state.upgradeMajorMagic);
 
   const correctRows = getCorrectRowCount(bookLocations);
   const carryCapacity = getCarryCapacity({ unlockedMinorMagicIds });
+  const knownEarnedMagicPoints = getKnownEarnedMajorMagicPoints(correctRows);
+  const spentMagicPoints = getSpentMajorMagicPoints(majorMagicLevels);
+  const availableMagicPoints = getAvailableKnownMajorMagicPoints(
+    correctRows,
+    majorMagicLevels,
+  );
   const inspectedBook = inspectedBookId
     ? bookInstances.find((book) => book.id === inspectedBookId) ?? null
     : null;
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.code !== "Tab" || phase !== "sorting") {
+        return;
+      }
+
+      event.preventDefault();
+      setMagicMenuOpen((open) => {
+        const nextOpen = !open;
+
+        if (nextOpen && document.pointerLockElement) {
+          document.exitPointerLock();
+        }
+
+        return nextOpen;
+      });
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [phase]);
 
   useEffect(() => {
     const previousCorrectRows = previousCorrectRowsRef.current;
@@ -99,6 +132,7 @@ export function GameShell() {
           <div className="pointer-events-auto rounded-lg border border-white/10 bg-black/55 px-3 py-2 text-right text-xs text-white/70 backdrop-blur">
             <div>Phase: {phase}</div>
             <div>Correct rows: {correctRows} / 400</div>
+            <div>Major Magic points: {availableMagicPoints} available · {spentMagicPoints}/{knownEarnedMagicPoints} spent/known earned</div>
             <div>Carrying: {carriedCount} / {carryCapacity}</div>
             <div>
               Keys: {collectedKeyCount} / 4 · Minor Magic:{" "}
@@ -174,6 +208,62 @@ export function GameShell() {
               : placementFeedback === "correct-section"
                 ? "Correct section, wrong position or row"
                 : "Wrong section"}
+          </div>
+        ) : null}
+
+        {magicMenuOpen && phase === "sorting" ? (
+          <div className="pointer-events-auto absolute inset-0 flex items-center justify-center bg-black/55 backdrop-blur-sm">
+            <div className="w-[min(46rem,calc(100vw-2rem))] rounded-2xl border border-white/15 bg-stone-950/95 p-6 text-white shadow-2xl">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-300">
+                    Major Magic
+                  </div>
+                  <h2 className="mt-2 text-2xl font-semibold">
+                    {availableMagicPoints} point{availableMagicPoints === 1 ? "" : "s"} available
+                  </h2>
+                  <p className="mt-2 text-sm text-white/55">
+                    Verified progression thresholds are encoded through 55 completed rows; later thresholds remain source-research data.
+                  </p>
+                </div>
+                <button
+                  className="rounded border border-white/15 px-3 py-2 text-sm hover:bg-white/10"
+                  onClick={() => setMagicMenuOpen(false)}
+                  type="button"
+                >
+                  Close
+                </button>
+              </div>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                {majorMagicDefinitions.map((definition) => {
+                  const level = majorMagicLevels[definition.id];
+                  const maxed = level >= definition.maxLevel;
+
+                  return (
+                    <button
+                      className="rounded-xl border border-white/10 bg-white/[0.04] p-4 text-left enabled:hover:bg-white/[0.08] disabled:opacity-55"
+                      disabled={availableMagicPoints <= 0 || maxed}
+                      key={definition.id}
+                      onClick={() => upgradeMajorMagic(definition.id)}
+                      type="button"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="font-semibold">
+                          {definition.hotkey}. {definition.name}
+                        </div>
+                        <div className="text-sm text-violet-200">
+                          {level}/{definition.maxLevel}
+                        </div>
+                      </div>
+                      <div className="mt-2 text-sm leading-5 text-white/55">
+                        {definition.effect}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         ) : null}
 
