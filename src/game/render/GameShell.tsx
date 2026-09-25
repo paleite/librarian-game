@@ -20,6 +20,7 @@ import { MobileHud } from "./MobileHud";
 import { AchievementToasts } from "./AchievementToasts";
 import { AchievementGallery } from "./AchievementGallery";
 import { SaveSlotsPanel } from "./SaveSlotsPanel";
+import { LibraryAmbience } from "./LibraryAmbience";
 
 
 export function GameShell() {
@@ -187,6 +188,12 @@ export function GameShell() {
   return (
     <main className="relative h-dvh w-full overflow-hidden bg-black">
       <AchievementToasts />
+      <LibraryAmbience
+        active={phase === "sorting" || phase === "special-stage"}
+        correctRows={correctRows}
+        cozyMode={cozyMode}
+        elapsedMilliseconds={elapsedMilliseconds}
+      />
       {achievementsOpen ? (
         <AchievementGallery
           unlockedAchievementIds={unlockedAchievementIds}
