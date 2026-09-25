@@ -72,6 +72,26 @@ export function PlayerController() {
         dropKeyDownAtRef.current = performance.now();
       }
 
+      if (
+        !event.repeat &&
+        document.pointerLockElement &&
+        ["Digit1", "Digit2", "Digit3", "Digit4", "Digit5"].includes(event.code)
+      ) {
+        const magicByKey = {
+          Digit1: "sort",
+          Digit2: "shelf-guide",
+          Digit3: "insight",
+          Digit4: "auto-shelving",
+          Digit5: "assemble",
+        } as const;
+
+        const magicId = magicByKey[event.code as keyof typeof magicByKey];
+
+        if (magicId) {
+          useGameStore.getState().useMajorMagic(magicId);
+        }
+      }
+
       if (event.code === "Space" && !event.repeat) {
         const rigidBody = rigidBodyRef.current;
 
