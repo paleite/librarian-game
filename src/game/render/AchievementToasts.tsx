@@ -7,6 +7,7 @@ import {
   type AchievementId,
 } from "@/game/content/achievements";
 import { ACHIEVEMENT_UNLOCKED_EVENT } from "@/game/save/profile";
+import { playAchievementCue } from "@/game/audio/sfx";
 
 interface ToastState {
   id: AchievementId;
@@ -24,6 +25,7 @@ export function AchievementToasts() {
         return;
       }
 
+      playAchievementCue();
       setQueue((current) => [
         ...current,
         {
