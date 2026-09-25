@@ -2,47 +2,40 @@
 
 import { create } from "zustand";
 
-import type { MajorMagicId, MinorMagicId } from "@/game/content/abilities";
-import type { SecretKeyId } from "@/game/content/secrets";
+import { CATALOG_VERSION, LAYOUT_VERSION } from "@/game/run/generate-run";
 
-export type GamePhase = "title" | "sorting" | "completed";
+import {
+  initialGameState,
+  type GameState,
+} from "./game-state";
 
-export interface GameRuntimeState {
-  phase: GamePhase;
-  seed: string | null;
-  carriedBookIds: string[];
-  collectedKeyIds: SecretKeyId[];
-  unlockedMajorMagicIds: MajorMagicId[];
-  unlockedMinorMagicIds: MinorMagicId[];
-  correctlyShelvedRows: number;
-  shelvedBooks: number;
+export interface GameActions {
   startNewGame: (seed?: string) => void;
   returnToTitle: () => void;
+  setCozyMode: (enabled: boolean) => void;
 }
+
+export type GameStore = GameState & GameActions;
 
 function createRunSeed(): string {
   return globalThis.crypto?.randomUUID?.() ?? `run-${Date.now()}`;
 }
 
-export const useGameStore = create<GameRuntimeState>((set) => ({
-  phase: "title",
-  seed: null,
-  carriedBookIds: [],
-  collectedKeyIds: [],
-  unlockedMajorMagicIds: [],
-  unlockedMinorMagicIds: [],
-  correctlyShelvedRows: 0,
-  shelvedBooks: 0,
+export const useGameStore = create<GameStore>((set) => ({
+  ...initialGameState,
+
   startNewGame: (seed) =>
     set({
+      ...initialGameState,
       phase: "sorting",
-      seed: seed ?? createRunSeed(),
-      carriedBookIds: [],
-      collectedKeyIds: [],
-      unlockedMajorMagicIds: [],
-      unlockedMinorMagicIds: [],
-      correctlyShelvedRows: 0,
-      shelvedBooks: 0,
+      runIdentity: {
+        seed: seed ?? createRunSeed(),
+        catalogVersion: CATALOG_VERSION,
+        layoutVersion: LAYOUT_VERSION,
+      },
     }),
-  returnToTitle: () => set({ phase: "title" }),
+
+  returnToTitle: () => set(initialGameState),
+
+  setCozyMode: (enabled) => set({ cozyMode: enabled }),
 }));
