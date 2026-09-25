@@ -11,6 +11,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
 import { playerInput } from "@/game/input/player-input";
+import { playBookDropCue, playFootstepCue } from "@/game/audio/sfx";
 import { useCoarsePointer } from "@/game/input/use-coarse-pointer";
 import { canSprint, hasHighJump } from "@/game/rules/progression";
 import type { Transform3 } from "@/game/run/types";
@@ -77,6 +78,7 @@ function dropBooks(camera: THREE.Camera, heldMilliseconds: number) {
 
   if (dropAll) {
     state.dropAllCarriedBooks(transforms);
+    playBookDropCue(state.carriedBookIds.length);
     return;
   }
 
@@ -84,6 +86,7 @@ function dropBooks(camera: THREE.Camera, heldMilliseconds: number) {
 
   if (topBookId) {
     state.dropCarriedBook(topBookId, transforms[0]);
+    playBookDropCue(1);
   }
 }
 
@@ -101,6 +104,7 @@ export function PlayerController() {
   const lastAimCheckAt = useRef(0);
   const lastTargetedShelfRowId = useRef<string | null>(null);
   const lastAimObject = useRef<THREE.Object3D | null>(null);
+  const lastFootstepAt = useRef(0);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -456,6 +460,23 @@ export function PlayerController() {
     }
 
     const velocity = rigidBody.linvel();
+
+    const horizontalSpeed = Math.hypot(
+      movementVector.current.x,
+      movementVector.current.z,
+    );
+    const grounded = Math.abs(velocity.y) <= 0.09;
+
+    if (grounded && horizontalSpeed > 0.5) {
+      const now = performance.now();
+      const sprinting = horizontalSpeed > (WALK_SPEED + SPRINT_SPEED) / 2;
+      const cadenceMilliseconds = sprinting ? 285 : 410;
+
+      if (now - lastFootstepAt.current >= cadenceMilliseconds) {
+        lastFootstepAt.current = now;
+        playFootstepCue(sprinting);
+      }
+    }
 
     rigidBody.setLinvel(
       {
