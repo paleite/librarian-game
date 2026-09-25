@@ -91,6 +91,9 @@ export function PlayerController() {
   const forwardVector = useRef(new THREE.Vector3());
   const rightVector = useRef(new THREE.Vector3());
   const movementVector = useRef(new THREE.Vector3());
+  const interactionRaycaster = useRef(new THREE.Raycaster());
+  const lastAimCheckAt = useRef(0);
+  const lastTargetedShelfRowId = useRef<string | null>(null);
 
   useEffect(() => {
     const media = window.matchMedia("(pointer: coarse)");
@@ -172,7 +175,7 @@ export function PlayerController() {
     };
   }, []);
 
-  useFrame(({ camera }) => {
+  useFrame(({ camera, scene }) => {
     statePlayerCamera.current = camera;
 
     const rigidBody = rigidBodyRef.current;
@@ -194,6 +197,45 @@ export function PlayerController() {
         -MAX_PITCH,
         MAX_PITCH,
       );
+    }
+
+    interactionRaycaster.current.far = 3.2;
+    interactionRaycaster.current.setFromCamera({ x: 0, y: 0 }, camera);
+
+    if (coarsePointer && performance.now() - lastAimCheckAt.current >= 100) {
+      lastAimCheckAt.current = performance.now();
+
+      const aimedShelfRowId =
+        interactionRaycaster.current
+          .intersectObjects(scene.children, true)
+          .map((intersection) =>
+            typeof intersection.object.userData.targetShelfRowId === "string"
+              ? (intersection.object.userData.targetShelfRowId as string)
+              : null,
+          )
+          .find((rowId) => rowId !== null) ?? null;
+
+      if (aimedShelfRowId !== lastTargetedShelfRowId.current) {
+        lastTargetedShelfRowId.current = aimedShelfRowId;
+        useGameStore.getState().setTargetedShelfRow(aimedShelfRowId);
+      }
+    }
+
+    if (frameInput.interactQueued) {
+      const interaction = interactionRaycaster.current
+        .intersectObjects(scene.children, true)
+        .find(
+          (intersection) =>
+            typeof intersection.object.userData.mobileInteract === "function",
+        );
+
+      if (interaction) {
+        const mobileInteract = interaction.object.userData.mobileInteract as (
+          hit: THREE.Intersection,
+        ) => void;
+
+        mobileInteract(interaction);
+      }
     }
 
     if (frameInput.specialUltimateQueued) {
