@@ -8,7 +8,8 @@ import { getCorrectRowCount } from "@/game/rules/shelf-state";
 import { useGameStore } from "@/game/state/game-store";
 import { bookInstances } from "@/game/run/book-instances";
 import type { PlacementFeedback } from "@/game/rules/placement-feedback";
-import { readProfileState } from "@/game/save/profile";
+import { ACHIEVEMENT_UNLOCKED_EVENT, readProfileState } from "@/game/save/profile";
+import type { AchievementId } from "@/game/content/achievements";
 import { SPECIAL_STAGE_ULTIMATE_DURATION_MILLISECONDS } from "@/game/modes/special-stage";
 
 import { playerInput } from "@/game/input/player-input";
@@ -17,6 +18,7 @@ import { GameCanvas } from "./GameCanvas";
 import { MobileControls } from "./MobileControls";
 import { MobileHud } from "./MobileHud";
 import { AchievementToasts } from "./AchievementToasts";
+import { AchievementGallery } from "./AchievementGallery";
 
 const MANUAL_SAVE_SLOTS = ["slot-1", "slot-2", "slot-3"] as const;
 
@@ -27,6 +29,8 @@ export function GameShell() {
   const [magicMenuOpen, setMagicMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [specialStageUnlocked, setSpecialStageUnlocked] = useState(false);
+  const [unlockedAchievementIds, setUnlockedAchievementIds] = useState<AchievementId[]>([]);
+  const [achievementsOpen, setAchievementsOpen] = useState(false);
   const previousCorrectRowsRef = useRef(0);
 
   const phase = useGameStore((state) => state.phase);
@@ -92,10 +96,36 @@ export function GameShell() {
       phase === "completed" ||
       phase === "special-stage-completed"
     ) {
-      const unlocked = readProfileState().specialStageUnlocked;
-      window.setTimeout(() => setSpecialStageUnlocked(unlocked), 0);
+      const profile = readProfileState();
+      window.setTimeout(() => {
+        setSpecialStageUnlocked(profile.specialStageUnlocked);
+        setUnlockedAchievementIds(profile.unlockedAchievementIds);
+      }, 0);
     }
   }, [phase]);
+
+  useEffect(() => {
+    const handleAchievementUnlocked = (event: Event) => {
+      const achievementId = (event as CustomEvent<AchievementId>).detail;
+
+      setUnlockedAchievementIds((current) =>
+        current.includes(achievementId)
+          ? current
+          : [...current, achievementId],
+      );
+    };
+
+    window.addEventListener(
+      ACHIEVEMENT_UNLOCKED_EVENT,
+      handleAchievementUnlocked,
+    );
+
+    return () =>
+      window.removeEventListener(
+        ACHIEVEMENT_UNLOCKED_EVENT,
+        handleAchievementUnlocked,
+      );
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -156,6 +186,12 @@ export function GameShell() {
   return (
     <main className="relative h-dvh w-full overflow-hidden bg-black">
       <AchievementToasts />
+      {achievementsOpen ? (
+        <AchievementGallery
+          unlockedAchievementIds={unlockedAchievementIds}
+          onClose={() => setAchievementsOpen(false)}
+        />
+      ) : null}
       <div className="absolute inset-0">
         <GameCanvas
           onInspectBook={setInspectedBookId}
@@ -458,6 +494,13 @@ export function GameShell() {
               >
                 Start new run
               </button>
+              <button
+                className="rounded-lg border border-white/15 px-5 py-3 font-semibold text-white/80 hover:bg-white/[0.06]"
+                onClick={() => setAchievementsOpen(true)}
+                type="button"
+              >
+                Achievements · {unlockedAchievementIds.length}/12
+              </button>
               {specialStageUnlocked ? (
                 <button
                   className="rounded-lg border border-violet-300/30 bg-violet-400/10 px-5 py-3 font-semibold text-violet-100 hover:bg-violet-400/15"
@@ -592,7 +635,18 @@ export function GameShell() {
                 ) : null}
 
                 <button
-                  className="mt-4 min-h-12 w-full rounded-xl border border-white/15 text-sm text-white/75"
+                  className="mt-3 min-h-12 w-full rounded-xl border border-amber-300/20 bg-amber-300/[0.06] text-sm text-amber-100"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    setAchievementsOpen(true);
+                  }}
+                  type="button"
+                >
+                  Achievements · {unlockedAchievementIds.length}/12
+                </button>
+
+                <button
+                  className="mt-3 min-h-12 w-full rounded-xl border border-white/15 text-sm text-white/75"
                   onClick={() => {
                     playerInput.clearMove();
                     setMobileMenuOpen(false);
