@@ -1,0 +1,37 @@
+import { SectionSchema, type Section } from "./schema";
+
+const sectionData = [
+  { code: "1A", floor: 1, name: "Monsterology", colorFamily: "brown / earthy" },
+  { code: "1B", floor: 1, name: "Astrology and Divination", colorFamily: "blue / purple / gold" },
+  { code: "1C", floor: 1, name: "Curses and Dispels", colorFamily: "black / red" },
+  { code: "1D", floor: 1, name: "Bard and Music", colorFamily: "green / brown / gold" },
+  { code: "1E", floor: 1, name: "Necromancy", colorFamily: "black / purple" },
+  { code: "1F", floor: 1, name: "Transfiguration", colorFamily: "red / maroon / brown" },
+  { code: "1G", floor: 1, name: "Magical Artifacts and Enchanting", colorFamily: "light purple / gold" },
+  { code: "1H", floor: 1, name: "Stealth", colorFamily: "black / gold / white" },
+  { code: "1I", floor: 1, name: "Illusion Magic", colorFamily: "purple" },
+  { code: "1J", floor: 1, name: "Summoning Magic", colorFamily: "blue / turquoise" },
+  { code: "1K", floor: 1, name: "Healer and Healing Magic", colorFamily: "white / red" },
+  { code: "1L", floor: 1, name: "Holy Magic", colorFamily: "white / gold" },
+  { code: "1M", floor: 1, name: "Destruction Magic", colorFamily: "elemental / gemstone" },
+  { code: "1N", floor: 1, name: "Alchemy and Potion-Making", colorFamily: "mixed / old tome" },
+  { code: "2A", floor: 2, name: "Warrior", colorFamily: "brown / red / black" },
+  { code: "2B", floor: 2, name: "Archery", colorFamily: "earthy green / gold" },
+  { code: "2C", floor: 2, name: "Daily Magic", colorFamily: "light pastels" },
+  { code: "2D", floor: 2, name: "Mathematics", colorFamily: "mixed textbook" },
+  { code: "2E", floor: 2, name: "Magical Art", colorFamily: "mixed" },
+  { code: "2F", floor: 2, name: "Management", colorFamily: "dark blue / green" },
+  { code: "2G", floor: 2, name: "Economics", colorFamily: "green" },
+  { code: "2H", floor: 2, name: "Sociology", colorFamily: "brown / maroon" },
+  { code: "2I", floor: 2, name: "Psychology", colorFamily: "red / red-brown" },
+  { code: "2J", floor: 2, name: "Philosophy", colorFamily: "white / gold / silver" },
+  { code: "2K", floor: 2, name: "Jurisprudence", colorFamily: "green" },
+  { code: "2L", floor: 2, name: "Romance Novels", colorFamily: "purple / pink / mixed" },
+  { code: "2M", floor: 2, name: "Mystery Novels", colorFamily: "black / silver / mixed" },
+  { code: "2N", floor: 2, name: "History", colorFamily: "dark / earthy" },
+  { code: "2O", floor: 2, name: "The Travels of Otherworld", colorFamily: "brown / muted" },
+  { code: "2P", floor: 2, name: "Dungeons", colorFamily: "purple / pink / blue" },
+  { code: "2Q", floor: 2, name: "Language", colorFamily: "dark red / green / mixed" },
+] as const;
+
+export const sections: readonly Section[] = SectionSchema.array().parse(sectionData);
