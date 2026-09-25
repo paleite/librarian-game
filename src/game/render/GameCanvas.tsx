@@ -3,15 +3,25 @@
 import { Canvas } from "@react-three/fiber";
 import { Physics } from "@react-three/rapier";
 
-import { LibraryScene } from "./LibraryScene";
+import type { PlacementFeedback } from "@/game/rules/placement-feedback";
+
 import { BookInstances } from "./BookInstances";
 import { CarriedBooks } from "./CarriedBooks";
-import { ShelfTargets } from "./ShelfTargets";
-import { SecretObjects } from "./SecretObjects";
-import { RecallStone } from "./RecallStone";
+import { LibraryScene } from "./LibraryScene";
 import { PlayerController } from "./PlayerController";
+import { RecallStone } from "./RecallStone";
+import { SecretObjects } from "./SecretObjects";
+import { ShelfTargets } from "./ShelfTargets";
 
-export function GameCanvas() {
+export interface GameCanvasProps {
+  onInspectBook: (bookId: string | null) => void;
+  onPlacementFeedback: (feedback: PlacementFeedback) => void;
+}
+
+export function GameCanvas({
+  onInspectBook,
+  onPlacementFeedback,
+}: GameCanvasProps) {
   return (
     <Canvas
       camera={{ fov: 70, near: 0.05, far: 120, position: [0, 1.65, 7] }}
@@ -31,10 +41,10 @@ export function GameCanvas() {
 
       <Physics gravity={[0, -20, 0]}>
         <LibraryScene />
-        <ShelfTargets />
+        <ShelfTargets onPlacementFeedback={onPlacementFeedback} />
         <SecretObjects />
         <RecallStone />
-        <BookInstances />
+        <BookInstances onInspectBook={onInspectBook} />
         <CarriedBooks />
         <PlayerController />
       </Physics>
