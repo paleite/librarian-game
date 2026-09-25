@@ -23,6 +23,8 @@ import { LibraryAmbience } from "./LibraryAmbience";
 import { InteractionHud } from "./InteractionHud";
 import { MajorMagicHud } from "./MajorMagicHud";
 import { SkillPointProgress } from "./SkillPointProgress";
+import { SettingsPanel } from "./SettingsPanel";
+import { VignetteOverlay } from "./VignetteOverlay";
 
 
 export function GameShell() {
@@ -34,6 +36,7 @@ export function GameShell() {
   const [unlockedAchievementIds, setUnlockedAchievementIds] = useState<AchievementId[]>([]);
   const [achievementsOpen, setAchievementsOpen] = useState(false);
   const [savesOpen, setSavesOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const previousCorrectRowsRef = useRef(0);
 
   const phase = useGameStore((state) => state.phase);
@@ -198,6 +201,13 @@ export function GameShell() {
           onClose={() => setAchievementsOpen(false)}
         />
       ) : null}
+      {settingsOpen ? (
+        <SettingsPanel
+          autosaveEnabled={autosaveEnabled}
+          onAutosaveChange={setAutosaveEnabled}
+          onClose={() => setSettingsOpen(false)}
+        />
+      ) : null}
       {savesOpen ? (
         <SaveSlotsPanel
           canSave={phase === "sorting"}
@@ -225,6 +235,7 @@ export function GameShell() {
           }}
         />
       </div>
+      <VignetteOverlay />
 
       <div className="pointer-events-none absolute inset-0 z-10 flex flex-col justify-between p-5">
         <div className="flex items-start justify-between gap-4">
@@ -254,27 +265,13 @@ export function GameShell() {
             </div>
             <div className="max-w-52 truncate">Seed: {seed ?? "none"}</div>
 
-            <label className="mt-2 flex items-center justify-end gap-2">
-              <span>Cozy</span>
-              <input
-                checked={cozyMode}
-                onChange={(event) =>
-                  setCozyMode(event.currentTarget.checked)
-                }
-                type="checkbox"
-              />
-            </label>
-
-            <label className="mt-1 flex items-center justify-end gap-2">
-              <span>Autosave</span>
-              <input
-                checked={autosaveEnabled}
-                onChange={(event) =>
-                  setAutosaveEnabled(event.currentTarget.checked)
-                }
-                type="checkbox"
-              />
-            </label>
+            <button
+              className="mt-2 rounded border border-white/15 px-3 py-1.5 hover:bg-white/10"
+              onClick={() => setSettingsOpen(true)}
+              type="button"
+            >
+              Settings
+            </button>
 
             {phase === "sorting" ? (
               <button
@@ -491,6 +488,13 @@ export function GameShell() {
               </button>
               <button
                 className="rounded-lg border border-white/15 px-5 py-3 font-semibold text-white/80 hover:bg-white/[0.06]"
+                onClick={() => setSettingsOpen(true)}
+                type="button"
+              >
+                Settings
+              </button>
+              <button
+                className="rounded-lg border border-white/15 px-5 py-3 font-semibold text-white/80 hover:bg-white/[0.06]"
                 onClick={() => setAchievementsOpen(true)}
                 type="button"
               >
@@ -551,29 +555,16 @@ export function GameShell() {
                   </button>
                 </div>
 
-                <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
-                  <label className="flex min-h-12 items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] px-3">
-                    <span>Cozy</span>
-                    <input
-                      checked={cozyMode}
-                      onChange={(event) =>
-                        setCozyMode(event.currentTarget.checked)
-                      }
-                      type="checkbox"
-                    />
-                  </label>
-
-                  <label className="flex min-h-12 items-center justify-between rounded-xl border border-white/10 bg-white/[0.04] px-3">
-                    <span>Autosave</span>
-                    <input
-                      checked={autosaveEnabled}
-                      onChange={(event) =>
-                        setAutosaveEnabled(event.currentTarget.checked)
-                      }
-                      type="checkbox"
-                    />
-                  </label>
-                </div>
+                <button
+                  className="mt-5 min-h-12 w-full rounded-xl border border-white/15 bg-white/[0.04] text-sm"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    setSettingsOpen(true);
+                  }}
+                  type="button"
+                >
+                  Settings
+                </button>
 
                 {phase === "sorting" ? (
                   <>
