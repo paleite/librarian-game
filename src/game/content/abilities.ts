@@ -22,31 +22,46 @@ export interface AbilityDefinition<TId extends string> {
   effect: string;
 }
 
-export const majorMagicDefinitions: readonly AbilityDefinition<MajorMagicId>[] = [
+export interface MajorMagicDefinition extends AbilityDefinition<MajorMagicId> {
+  hotkey: "1" | "2" | "3" | "4" | "5";
+  maxLevel: number;
+}
+
+export const majorMagicDefinitions: readonly MajorMagicDefinition[] = [
   {
     id: "sort",
     name: "Sort",
-    effect: "Reorder the books currently carried by the player.",
+    effect: "Sort carried books by series and volume order.",
+    hotkey: "1",
+    maxLevel: 5,
   },
   {
     id: "shelf-guide",
     name: "Shelf Guide",
-    effect: "Reveal the correct library section for the top carried book.",
+    effect: "Reveal the correct shelf section for the top carried book.",
+    hotkey: "2",
+    maxLevel: 10,
   },
   {
     id: "insight",
     name: "Insight",
     effect: "Highlight loose matching volumes for the top carried book.",
+    hotkey: "3",
+    maxLevel: 10,
   },
   {
     id: "auto-shelving",
     name: "Auto-Shelving",
-    effect: "Place compatible carried books onto the targeted shelf.",
+    effect: "Automatically shelve compatible carried books at the targeted section.",
+    hotkey: "4",
+    maxLevel: 10,
   },
   {
     id: "assemble",
     name: "Assemble",
-    effect: "Collect other loose volumes from the top carried book's series.",
+    effect: "Collect loose volumes from the top carried book's series.",
+    hotkey: "5",
+    maxLevel: 10,
   },
 ];
 
@@ -72,3 +87,7 @@ export const minorMagicDefinitions: readonly AbilityDefinition<MinorMagicId>[] =
     effect: "Increase carry capacity from 13 to 15.",
   },
 ];
+
+export const majorMagicDefinitionById = new Map(
+  majorMagicDefinitions.map((definition) => [definition.id, definition]),
+);
