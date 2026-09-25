@@ -30,7 +30,7 @@ jobs:
 
       - name: Commit lockfile
         run: |
-          if git diff --quiet -- pnpm-lock.yaml && test -f pnpm-lock.yaml; then
+          if test -z "$(git status --porcelain -- pnpm-lock.yaml)"; then
             exit 0
           fi
           git config user.name "github-actions[bot]"
