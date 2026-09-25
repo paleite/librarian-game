@@ -27,7 +27,6 @@ import { SkillPointProgress } from "./SkillPointProgress";
 import { TutorialHints } from "./TutorialHints";
 import { SettingsPanel } from "./SettingsPanel";
 import { VignetteOverlay } from "./VignetteOverlay";
-import { TutorialPrompts } from "./TutorialPrompts";
 import { CarriedBookList } from "./CarriedBookList";
 
 
@@ -249,7 +248,6 @@ export function GameShell() {
       <MajorMagicHud />
       <SkillPointProgress />
       <TutorialHints />
-      <TutorialPrompts />
       <div className="absolute inset-0">
         <GameCanvas
           onPlacementFeedback={(feedback) => {
