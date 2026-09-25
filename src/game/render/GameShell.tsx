@@ -16,6 +16,7 @@ import { playerInput } from "@/game/input/player-input";
 import { GameCanvas } from "./GameCanvas";
 import { MobileControls } from "./MobileControls";
 import { MobileHud } from "./MobileHud";
+import { AchievementToasts } from "./AchievementToasts";
 
 const MANUAL_SAVE_SLOTS = ["slot-1", "slot-2", "slot-3"] as const;
 
@@ -154,6 +155,7 @@ export function GameShell() {
 
   return (
     <main className="relative h-dvh w-full overflow-hidden bg-black">
+      <AchievementToasts />
       <div className="absolute inset-0">
         <GameCanvas
           onInspectBook={setInspectedBookId}
