@@ -1,10 +1,13 @@
 import type { MinorMagicId } from "./abilities";
 
-export type SecretKeyId =
-  | "crimson-octagon"
-  | "golden-diamond"
-  | "emerald-club"
-  | "azure-star";
+export const secretKeyIds = [
+  "crimson-octagon",
+  "golden-diamond",
+  "emerald-club",
+  "azure-star",
+] as const;
+
+export type SecretKeyId = (typeof secretKeyIds)[number];
 
 export interface SecretDefinition {
   keyId: SecretKeyId;
