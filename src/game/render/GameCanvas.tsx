@@ -22,6 +22,7 @@ import { LibraryLighting } from "./LibraryLighting";
 import { AchievementController } from "./AchievementController";
 import { ShelfFurniture } from "./ShelfFurniture";
 import { FloorMaps } from "./FloorMaps";
+import { LibraryLandmarks } from "./LibraryLandmarks";
 
 export interface GameCanvasProps {
   onPlacementFeedback: (feedback: PlacementFeedback) => void;
@@ -49,6 +50,7 @@ export function GameCanvas({
         <LibraryScene />
         <ShelfFurniture />
         <FloorMaps />
+        <LibraryLandmarks />
         <ExitDoor />
         <ShelfTargets onPlacementFeedback={onPlacementFeedback} />
         <SectionPlaques />
