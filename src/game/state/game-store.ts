@@ -8,6 +8,7 @@ import { spawnSlots } from "@/game/layout/spawn-slots";
 import type { BookLocation, Transform3 } from "@/game/run/types";
 import { readSaveSlot, writeSaveSlot } from "@/game/save/storage";
 import { getCarryCapacity } from "@/game/rules/progression";
+import { secretDefinitions } from "@/game/content/secrets";
 
 import {
   initialGameState,
@@ -201,6 +202,41 @@ export const useGameStore = create<GameStore>((set, get) => ({
     };
 
     set({ carriedBookIds, bookLocations });
+  },
+
+  collectSecretKey: (keyId) => {
+    const state = get();
+
+    if (state.collectedKeyIds.includes(keyId)) {
+      return;
+    }
+
+    set({
+      collectedKeyIds: [...state.collectedKeyIds, keyId],
+    });
+  },
+
+  openSecretChest: (keyId) => {
+    const state = get();
+
+    if (!state.collectedKeyIds.includes(keyId)) {
+      return;
+    }
+
+    const secret = secretDefinitions.find(
+      (definition) => definition.keyId === keyId,
+    );
+
+    if (!secret || state.unlockedMinorMagicIds.includes(secret.rewardId)) {
+      return;
+    }
+
+    set({
+      unlockedMinorMagicIds: [
+        ...state.unlockedMinorMagicIds,
+        secret.rewardId,
+      ],
+    });
   },
 
   saveToSlot: (slotId) => {
