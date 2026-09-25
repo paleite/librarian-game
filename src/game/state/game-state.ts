@@ -25,6 +25,7 @@ export interface BookMovementActions {
   placeBookOnShelf: (bookId: string, rowId: string, index: number) => void;
   collectSecretKey: (keyId: SecretKeyId) => void;
   openSecretChest: (keyId: SecretKeyId) => void;
+  recallLooseBooks: () => void;
 }
 
 export const initialGameState: GameState = {
