@@ -465,37 +465,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
     });
   },
 
-  setTargetedShelfRow: (rowId) => {
-    const state = get();
-
-    if (
-      rowId &&
-      Date.now() < state.autoShelvingActiveUntil &&
-      state.carriedBookIds.length > 0
-    ) {
-      const autoShelved = autoShelveAtTarget(state, rowId);
-
-      set({
-        targetedShelfRowId: rowId,
-        carriedBookIds: autoShelved.carriedBookIds,
-        bookLocations: autoShelved.bookLocations,
-      });
-      return;
-    }
-
-    set({ targetedShelfRowId: rowId });
-  },
+  setTargetedShelfRow: (rowId) => set({ targetedShelfRowId: rowId }),
 
   useMajorMagic: (id) => {
     const state = get();
     const level = state.majorMagicLevels[id];
     const now = Date.now();
 
-    if (
-      level <= 0 ||
-      state.carriedBookIds.length === 0 ||
-      state.majorMagicReadyAt[id] > now
-    ) {
+    if (level <= 0 || state.carriedBookIds.length === 0) {
       return;
     }
 
@@ -506,10 +483,48 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return;
     }
 
+    if (id === "insight" && now < state.insightActiveUntil) {
+      set({
+        activeInsightSeriesId: topBook.seriesId,
+        majorMagicUsageCount: state.majorMagicUsageCount + 1,
+      });
+      return;
+    }
+
+    if (id === "auto-shelving" && now < state.autoShelvingActiveUntil) {
+      if (!state.targetedShelfRowId) {
+        return;
+      }
+
+      const autoShelved = autoShelveAtTarget(
+        state,
+        state.targetedShelfRowId,
+      );
+
+      if (autoShelved.placedCount === 0) {
+        return;
+      }
+
+      set({
+        carriedBookIds: autoShelved.carriedBookIds,
+        bookLocations: autoShelved.bookLocations,
+        majorMagicUsageCount: state.majorMagicUsageCount + 1,
+      });
+      return;
+    }
+
+    if (state.majorMagicReadyAt[id] > now) {
+      return;
+    }
+
     const cooldownMilliseconds = getMajorMagicCooldownMilliseconds(id, level);
     const activeMilliseconds = getMajorMagicActiveMilliseconds(id, level);
 
     if (id === "sort") {
+      if (state.carriedBookIds.length < 2) {
+        return;
+      }
+
       const carriedBookIds = [...state.carriedBookIds].sort((leftId, rightId) => {
         const left = bookById.get(leftId);
         const right = bookById.get(rightId);
@@ -542,40 +557,52 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
 
     if (id === "shelf-guide") {
+      const activeUntil = now + activeMilliseconds;
+
       set({
         activeShelfGuideSectionCode: topBook.sectionCode,
+        shelfGuideActiveUntil: activeUntil,
         majorMagicUsageCount: state.majorMagicUsageCount + 1,
         majorMagicReadyAt: withMajorMagicReadyAt(
           state,
           id,
-          now + activeMilliseconds + cooldownMilliseconds,
+          activeUntil + cooldownMilliseconds,
         ),
       });
 
       window.setTimeout(() => {
-        if (get().activeShelfGuideSectionCode === topBook.sectionCode) {
-          set({ activeShelfGuideSectionCode: null });
+        if (get().shelfGuideActiveUntil <= Date.now()) {
+          set({
+            activeShelfGuideSectionCode: null,
+            shelfGuideActiveUntil: 0,
+          });
         }
-      }, activeMilliseconds);
+      }, activeMilliseconds + 25);
       return;
     }
 
     if (id === "insight") {
+      const activeUntil = now + activeMilliseconds;
+
       set({
         activeInsightSeriesId: topBook.seriesId,
+        insightActiveUntil: activeUntil,
         majorMagicUsageCount: state.majorMagicUsageCount + 1,
         majorMagicReadyAt: withMajorMagicReadyAt(
           state,
           id,
-          now + activeMilliseconds + cooldownMilliseconds,
+          activeUntil + cooldownMilliseconds,
         ),
       });
 
       window.setTimeout(() => {
-        if (get().activeInsightSeriesId === topBook.seriesId) {
-          set({ activeInsightSeriesId: null });
+        if (get().insightActiveUntil <= Date.now()) {
+          set({
+            activeInsightSeriesId: null,
+            insightActiveUntil: 0,
+          });
         }
-      }, activeMilliseconds);
+      }, activeMilliseconds + 25);
       return;
     }
 
@@ -609,23 +636,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
         return;
       }
 
-      let carriedBookIds = [...state.carriedBookIds, ...candidateIds];
-      let bookLocations = withReindexedCarriedLocations(
+      const carriedBookIds = [...state.carriedBookIds, ...candidateIds];
+      const bookLocations = withReindexedCarriedLocations(
         state.bookLocations,
         carriedBookIds,
       );
-
-      if (
-        state.targetedShelfRowId &&
-        now < state.autoShelvingActiveUntil
-      ) {
-        const autoShelved = autoShelveAtTarget(
-          { bookLocations, carriedBookIds },
-          state.targetedShelfRowId,
-        );
-        carriedBookIds = autoShelved.carriedBookIds;
-        bookLocations = autoShelved.bookLocations;
-      }
 
       set({
         carriedBookIds,
@@ -641,14 +656,20 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
 
     if (id === "auto-shelving") {
+      if (!state.targetedShelfRowId) {
+        return;
+      }
+
+      const autoShelved = autoShelveAtTarget(
+        state,
+        state.targetedShelfRowId,
+      );
+
+      if (autoShelved.placedCount === 0) {
+        return;
+      }
+
       const activeUntil = now + activeMilliseconds;
-      const autoShelved = state.targetedShelfRowId
-        ? autoShelveAtTarget(state, state.targetedShelfRowId)
-        : {
-            bookLocations: state.bookLocations,
-            carriedBookIds: state.carriedBookIds,
-            placedCount: 0,
-          };
 
       set({
         carriedBookIds: autoShelved.carriedBookIds,
@@ -787,7 +808,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const state = get();
 
     writeSaveSlot(slotId, {
-      saveVersion: 5,
+      saveVersion: 6,
       savedAt: new Date().toISOString(),
       state: {
         phase: state.phase,
@@ -797,6 +818,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
         collectedKeyIds: state.collectedKeyIds,
         openedSecretChestIds: state.openedSecretChestIds,
         majorMagicLevels: state.majorMagicLevels,
+        shelfGuideActiveUntil: state.shelfGuideActiveUntil,
+        insightActiveUntil: state.insightActiveUntil,
         majorMagicReadyAt: state.majorMagicReadyAt,
         autoShelvingActiveUntil: state.autoShelvingActiveUntil,
         unlockedMinorMagicIds: state.unlockedMinorMagicIds,
