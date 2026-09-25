@@ -12,6 +12,7 @@ import { PlayerController } from "./PlayerController";
 import { RecallStone } from "./RecallStone";
 import { SecretObjects } from "./SecretObjects";
 import { ShelfTargets } from "./ShelfTargets";
+import { SectionPlaques } from "./SectionPlaques";
 
 export interface GameCanvasProps {
   onInspectBook: (bookId: string | null) => void;
@@ -42,6 +43,7 @@ export function GameCanvas({
       <Physics gravity={[0, -20, 0]}>
         <LibraryScene />
         <ShelfTargets onPlacementFeedback={onPlacementFeedback} />
+        <SectionPlaques />
         <SecretObjects />
         <RecallStone />
         <BookInstances onInspectBook={onInspectBook} />
