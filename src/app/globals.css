@@ -53,7 +53,8 @@ a {
     touch-action: none;
   }
 
-  .desktop-game-hud {
+  .desktop-game-hud,
+  .desktop-major-magic-hud {
     display: none !important;
   }
 
