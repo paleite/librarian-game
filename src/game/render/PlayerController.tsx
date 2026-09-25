@@ -7,12 +7,13 @@ import {
   RigidBody,
   type RapierRigidBody,
 } from "@react-three/rapier";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 
+import { playerInput } from "@/game/input/player-input";
 import { canSprint, hasHighJump } from "@/game/rules/progression";
-import { useGameStore } from "@/game/state/game-store";
 import type { Transform3 } from "@/game/run/types";
+import { useGameStore } from "@/game/state/game-store";
 
 const WALK_SPEED = 4.2;
 const SPRINT_SPEED = 7.2;
@@ -20,6 +21,8 @@ const JUMP_VELOCITY = 6.2;
 const HIGH_JUMP_VELOCITY = 9.4;
 const PLAYER_EYE_OFFSET = 0.65;
 const DROP_ALL_HOLD_MILLISECONDS = 360;
+const TOUCH_LOOK_SENSITIVITY = 0.003;
+const MAX_PITCH = Math.PI / 2 - 0.08;
 
 function createDropTransforms(
   camera: THREE.Camera,
@@ -55,14 +58,49 @@ function createDropTransforms(
   });
 }
 
+function dropBooks(camera: THREE.Camera, heldMilliseconds: number) {
+  const state = useGameStore.getState();
+
+  if (state.carriedBookIds.length === 0) {
+    return;
+  }
+
+  const dropAll = heldMilliseconds >= DROP_ALL_HOLD_MILLISECONDS;
+  const transforms = createDropTransforms(
+    camera,
+    dropAll ? state.carriedBookIds.length : 1,
+  );
+
+  if (dropAll) {
+    state.dropAllCarriedBooks(transforms);
+    return;
+  }
+
+  const topBookId = state.carriedBookIds.at(-1);
+
+  if (topBookId) {
+    state.dropCarriedBook(topBookId, transforms[0]);
+  }
+}
+
 export function PlayerController() {
+  const [coarsePointer, setCoarsePointer] = useState(false);
   const rigidBodyRef = useRef<RapierRigidBody>(null);
   const pressedKeysRef = useRef(new Set<string>());
   const dropKeyDownAtRef = useRef<number | null>(null);
   const forwardVector = useRef(new THREE.Vector3());
   const rightVector = useRef(new THREE.Vector3());
   const movementVector = useRef(new THREE.Vector3());
-  const cameraRef = useRef<THREE.Camera | null>(null);
+
+  useEffect(() => {
+    const media = window.matchMedia("(pointer: coarse)");
+    const update = () => setCoarsePointer(media.matches);
+
+    update();
+    media.addEventListener("change", update);
+
+    return () => media.removeEventListener("change", update);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -73,11 +111,7 @@ export function PlayerController() {
       }
 
       if (event.code === "KeyZ" && !event.repeat) {
-        const state = useGameStore.getState();
-
-        if (state.phase === "special-stage") {
-          state.startSpecialStageUltimate();
-        }
+        playerInput.queueSpecialUltimate();
       }
 
       if (
@@ -96,33 +130,12 @@ export function PlayerController() {
         const magicId = magicByKey[event.code as keyof typeof magicByKey];
 
         if (magicId) {
-          useGameStore.getState().useMajorMagic(magicId);
+          playerInput.queueMajorMagic(magicId);
         }
       }
 
       if (event.code === "Space" && !event.repeat) {
-        const rigidBody = rigidBodyRef.current;
-
-        if (!rigidBody) {
-          return;
-        }
-
-        const velocity = rigidBody.linvel();
-
-        if (Math.abs(velocity.y) > 0.08) {
-          return;
-        }
-
-        const state = useGameStore.getState();
-
-        rigidBody.setLinvel(
-          {
-            x: velocity.x,
-            y: hasHighJump(state) ? HIGH_JUMP_VELOCITY : JUMP_VELOCITY,
-            z: velocity.z,
-          },
-          true,
-        );
+        playerInput.queueJump();
       }
     };
 
@@ -133,37 +146,20 @@ export function PlayerController() {
         return;
       }
 
-      const camera = cameraRef.current;
       const startedAt = dropKeyDownAtRef.current;
       dropKeyDownAtRef.current = null;
 
-      if (!camera || startedAt === null) {
-        return;
-      }
+      if (startedAt !== null) {
+        const state = useGameStore.getState();
 
-      const state = useGameStore.getState();
+        if (state.carriedBookIds.length > 0) {
+          const heldMilliseconds = performance.now() - startedAt;
+          const camera = statePlayerCamera.current;
 
-      if (state.carriedBookIds.length === 0) {
-        return;
-      }
-
-      const heldMilliseconds = performance.now() - startedAt;
-      const transforms = createDropTransforms(
-        camera,
-        heldMilliseconds >= DROP_ALL_HOLD_MILLISECONDS
-          ? state.carriedBookIds.length
-          : 1,
-      );
-
-      if (heldMilliseconds >= DROP_ALL_HOLD_MILLISECONDS) {
-        state.dropAllCarriedBooks(transforms);
-        return;
-      }
-
-      const topBookId = state.carriedBookIds.at(-1);
-
-      if (topBookId) {
-        state.dropCarriedBook(topBookId, transforms[0]);
+          if (camera) {
+            dropBooks(camera, heldMilliseconds);
+          }
+        }
       }
     };
 
@@ -177,12 +173,66 @@ export function PlayerController() {
   }, []);
 
   useFrame(({ camera }) => {
-    cameraRef.current = camera;
+    statePlayerCamera.current = camera;
 
     const rigidBody = rigidBodyRef.current;
 
     if (!rigidBody) {
       return;
+    }
+
+    const frameInput = playerInput.consumeFrame();
+
+    if (
+      !document.pointerLockElement &&
+      (frameInput.lookDeltaX !== 0 || frameInput.lookDeltaY !== 0)
+    ) {
+      camera.rotation.order = "YXZ";
+      camera.rotation.y -= frameInput.lookDeltaX * TOUCH_LOOK_SENSITIVITY;
+      camera.rotation.x = THREE.MathUtils.clamp(
+        camera.rotation.x - frameInput.lookDeltaY * TOUCH_LOOK_SENSITIVITY,
+        -MAX_PITCH,
+        MAX_PITCH,
+      );
+    }
+
+    if (frameInput.specialUltimateQueued) {
+      const state = useGameStore.getState();
+
+      if (state.phase === "special-stage") {
+        state.startSpecialStageUltimate();
+      }
+    }
+
+    if (frameInput.majorMagicQueued) {
+      useGameStore.getState().useMajorMagic(frameInput.majorMagicQueued);
+    }
+
+    if (frameInput.jumpQueued) {
+      const velocity = rigidBody.linvel();
+
+      if (Math.abs(velocity.y) <= 0.08) {
+        const state = useGameStore.getState();
+
+        rigidBody.setLinvel(
+          {
+            x: velocity.x,
+            y: hasHighJump(state) ? HIGH_JUMP_VELOCITY : JUMP_VELOCITY,
+            z: velocity.z,
+          },
+          true,
+        );
+      }
+    }
+
+    if (
+      frameInput.dropReleasedAt !== null &&
+      frameInput.dropPressedAt !== null
+    ) {
+      dropBooks(
+        camera,
+        frameInput.dropReleasedAt - frameInput.dropPressedAt,
+      );
     }
 
     camera.getWorldDirection(forwardVector.current);
@@ -193,30 +243,29 @@ export function PlayerController() {
     }
 
     rightVector.current.crossVectors(forwardVector.current, camera.up).normalize();
-    movementVector.current.set(0, 0, 0);
 
-    if (pressedKeysRef.current.has("KeyW")) {
-      movementVector.current.add(forwardVector.current);
-    }
+    const keyboardX =
+      (pressedKeysRef.current.has("KeyD") ? 1 : 0) -
+      (pressedKeysRef.current.has("KeyA") ? 1 : 0);
+    const keyboardY =
+      (pressedKeysRef.current.has("KeyW") ? 1 : 0) -
+      (pressedKeysRef.current.has("KeyS") ? 1 : 0);
 
-    if (pressedKeysRef.current.has("KeyS")) {
-      movementVector.current.sub(forwardVector.current);
-    }
+    const moveX = THREE.MathUtils.clamp(keyboardX + frameInput.moveX, -1, 1);
+    const moveY = THREE.MathUtils.clamp(keyboardY + frameInput.moveY, -1, 1);
 
-    if (pressedKeysRef.current.has("KeyD")) {
-      movementVector.current.add(rightVector.current);
-    }
+    movementVector.current
+      .copy(forwardVector.current)
+      .multiplyScalar(moveY)
+      .add(rightVector.current.clone().multiplyScalar(moveX));
 
-    if (pressedKeysRef.current.has("KeyA")) {
-      movementVector.current.sub(rightVector.current);
-    }
+    const inputMagnitude = Math.hypot(moveX, moveY);
 
     if (movementVector.current.lengthSq() > 0) {
       const state = useGameStore.getState();
-      const speed =
-        pressedKeysRef.current.has("ShiftLeft") && canSprint(state)
-          ? SPRINT_SPEED
-          : WALK_SPEED;
+      const wantsSprint =
+        pressedKeysRef.current.has("ShiftLeft") || inputMagnitude > 0.82;
+      const speed = wantsSprint && canSprint(state) ? SPRINT_SPEED : WALK_SPEED;
 
       movementVector.current.normalize().multiplyScalar(speed);
     }
@@ -242,7 +291,7 @@ export function PlayerController() {
 
   return (
     <>
-      <PointerLockControls makeDefault />
+      <PointerLockControls enabled={!coarsePointer} makeDefault />
       <RigidBody
         ref={rigidBodyRef}
         position={[0, 1, 7]}
@@ -256,3 +305,7 @@ export function PlayerController() {
     </>
   );
 }
+
+const statePlayerCamera: { current: THREE.Camera | null } = {
+  current: null,
+};
