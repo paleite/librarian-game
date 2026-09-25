@@ -50,6 +50,24 @@ function getNearestFreeIndex(
   return null;
 }
 
+function resolveSlotIndexFromPoint(
+  object: THREE.Object3D,
+  point: THREE.Vector3,
+  capacity: number,
+  occupiedIndexes: ReadonlySet<number>,
+): number | null {
+  const width = Math.max(0.9, capacity * 0.24);
+  const localPoint = object.worldToLocal(point.clone());
+  const normalized = THREE.MathUtils.clamp(
+    localPoint.x / width + 0.5,
+    0,
+    0.9999,
+  );
+  const desiredIndex = Math.floor(normalized * capacity);
+
+  return getNearestFreeIndex(desiredIndex, capacity, occupiedIndexes);
+}
+
 export function ShelfTargets({
   onPlacementFeedback,
 }: ShelfTargetsProps) {
@@ -80,24 +98,50 @@ export function ShelfTargets({
 
   const topCarriedBookId = carriedBookIds.at(-1);
 
-  const resolveSlotIndex = (
-    event: ThreeEvent<PointerEvent>,
+  const placeAtPoint = (
+    object: THREE.Object3D,
+    point: THREE.Vector3,
     rowId: string,
     capacity: number,
     occupiedIndexes: ReadonlySet<number>,
   ) => {
-    const rowTransform = shelfRowTransformById.get(rowId);
-
-    if (!rowTransform) {
-      return null;
+    if (!topCarriedBookId) {
+      return;
     }
 
-    const width = Math.max(0.9, capacity * 0.24);
-    const localPoint = event.object.worldToLocal(event.point.clone());
-    const normalized = THREE.MathUtils.clamp(localPoint.x / width + 0.5, 0, 0.9999);
-    const desiredIndex = Math.floor(normalized * capacity);
+    const targetIndex = resolveSlotIndexFromPoint(
+      object,
+      point,
+      capacity,
+      occupiedIndexes,
+    );
 
-    return getNearestFreeIndex(desiredIndex, capacity, occupiedIndexes);
+    if (targetIndex === null) {
+      return;
+    }
+
+    const feedback = getPlacementFeedback({
+      bookId: topCarriedBookId,
+      rowId,
+      index: targetIndex,
+      bookLocations,
+    });
+
+    placeBookOnShelf(topCarriedBookId, rowId, targetIndex);
+    onPlacementFeedback(feedback);
+
+    if (feedback === "wrong-section") {
+      setTransientFeedback(null);
+    } else {
+      setTransientFeedback({
+        rowId,
+        index: targetIndex,
+        feedback,
+      });
+      window.setTimeout(() => setTransientFeedback(null), 650);
+    }
+
+    setHoveredSlot(null);
   };
 
   return (
@@ -118,15 +162,28 @@ export function ShelfTargets({
             key={row.id}
             position={rowTransform.transform.position}
             rotation={rowTransform.transform.rotation}
-            onPointerMove={(event) => {
+            userData={{
+              targetShelfRowId: row.id,
+              mobileInteract: (intersection: THREE.Intersection) => {
+                setTargetedShelfRow(row.id);
+                placeAtPoint(
+                  intersection.object,
+                  intersection.point,
+                  row.id,
+                  row.capacity,
+                  occupiedIndexes,
+                );
+              },
+            }}
+            onPointerMove={(event: ThreeEvent<PointerEvent>) => {
               if (!topCarriedBookId) {
                 setHoveredSlot(null);
                 return;
               }
 
-              const index = resolveSlotIndex(
-                event,
-                row.id,
+              const index = resolveSlotIndexFromPoint(
+                event.object,
+                event.point,
                 row.capacity,
                 occupiedIndexes,
               );
@@ -138,46 +195,19 @@ export function ShelfTargets({
               setHoveredSlot(null);
               setTargetedShelfRow(null);
             }}
-            onPointerDown={(event) => {
+            onPointerDown={(event: ThreeEvent<PointerEvent>) => {
               if (!topCarriedBookId) {
                 return;
               }
 
-              const targetIndex = resolveSlotIndex(
-                event,
+              event.stopPropagation();
+              placeAtPoint(
+                event.object,
+                event.point,
                 row.id,
                 row.capacity,
                 occupiedIndexes,
               );
-
-              if (targetIndex === null) {
-                return;
-              }
-
-              event.stopPropagation();
-
-              const feedback = getPlacementFeedback({
-                bookId: topCarriedBookId,
-                rowId: row.id,
-                index: targetIndex,
-                bookLocations,
-              });
-
-              placeBookOnShelf(topCarriedBookId, row.id, targetIndex);
-              onPlacementFeedback(feedback);
-
-              if (feedback === "wrong-section") {
-                setTransientFeedback(null);
-              } else {
-                setTransientFeedback({
-                  rowId: row.id,
-                  index: targetIndex,
-                  feedback,
-                });
-                window.setTimeout(() => setTransientFeedback(null), 650);
-              }
-
-              setHoveredSlot(null);
             }}
           >
             <boxGeometry args={[width, 0.07, 0.38]} />
