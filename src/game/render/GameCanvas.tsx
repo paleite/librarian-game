@@ -1,6 +1,7 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
+import { PerspectiveCamera } from "@react-three/drei";
 import { Physics } from "@react-three/rapier";
 
 import type { PlacementFeedback } from "@/game/rules/placement-feedback";
@@ -24,7 +25,6 @@ import { AchievementController } from "./AchievementController";
 import { ShelfFurniture } from "./ShelfFurniture";
 import { FloorMaps } from "./FloorMaps";
 import { LibraryLandmarks } from "./LibraryLandmarks";
-import { CameraSettings } from "./CameraSettings";
 
 export interface GameCanvasProps {
   onPlacementFeedback: (feedback: PlacementFeedback) => void;
@@ -34,17 +34,22 @@ export function GameCanvas({
   onPlacementFeedback,
 }: GameCanvasProps) {
   const coarsePointer = useCoarsePointer();
-  const { renderScale } = useGameSettings();
+  const { fov, renderScale } = useGameSettings();
 
   return (
     <Canvas
-      camera={{ fov: 70, near: 0.05, far: 120, position: [0, 1.65, 7] }}
       dpr={coarsePointer ? renderScale : [renderScale, 1.5 * renderScale]}
       shadows={!coarsePointer}
     >
       <color attach="background" args={["#100c09"]} />
       <fog attach="fog" args={["#100c09", 14, 38]} />
-      <CameraSettings />
+      <PerspectiveCamera
+        makeDefault
+        far={120}
+        fov={fov}
+        near={0.05}
+        position={[0, 1.65, 7]}
+      />
       <LibraryLighting />
 
       <Physics gravity={[0, -20, 0]}>
