@@ -29,6 +29,39 @@ export interface GameActions extends BookMovementActions {
   upgradeMajorMagic: (id: MajorMagicId) => void;
   setTargetedShelfRow: (rowId: string | null) => void;
   useMajorMagic: (id: MajorMagicId) => void;
+  addElapsedMilliseconds: (milliseconds: number) => void;
+  completeRun: () => void;
+
+  addElapsedMilliseconds: (milliseconds) => {
+    if (!Number.isFinite(milliseconds) || milliseconds <= 0) {
+      return;
+    }
+
+    const state = get();
+
+    if (state.phase !== "sorting") {
+      return;
+    }
+
+    set({
+      elapsedMilliseconds:
+        state.elapsedMilliseconds + Math.min(milliseconds, 250),
+    });
+  },
+
+  completeRun: () => {
+    const state = get();
+    const allBooksShelved = Object.values(state.bookLocations).every(
+      (location) => location.kind === "shelf",
+    );
+
+    if (!allBooksShelved) {
+      return;
+    }
+
+    set({ phase: "completed" });
+  },
+
   saveToSlot: (slotId: string) => void;
   loadFromSlot: (slotId: string) => void;
 }
