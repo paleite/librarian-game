@@ -1,12 +1,12 @@
 "use client";
 
-import { useLayoutEffect, useMemo, useRef } from "react";
 import type { ThreeEvent } from "@react-three/fiber";
+import { useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 
-import { bookInstances } from "@/game/run/book-instances";
-import { spawnSlotById } from "@/game/layout/spawn-slots";
 import { shelfRowTransformById } from "@/game/layout/shelf-row-transforms";
+import { spawnSlotById } from "@/game/layout/spawn-slots";
+import { bookInstances } from "@/game/run/book-instances";
 import { useGameStore } from "@/game/state/game-store";
 
 const BOOK_SIZE: readonly [number, number, number] = [0.22, 0.055, 0.32];
@@ -47,7 +47,11 @@ const SECTION_COLORS: Record<string, string> = {
 
 const bookById = new Map(bookInstances.map((book) => [book.id, book]));
 
-export function BookInstances() {
+export interface BookInstancesProps {
+  onInspectBook: (bookId: string | null) => void;
+}
+
+export function BookInstances({ onInspectBook }: BookInstancesProps) {
   const instancedMeshRef = useRef<THREE.InstancedMesh>(null);
   const bookLocations = useGameStore((state) => state.bookLocations);
   const pickUpBook = useGameStore((state) => state.pickUpBook);
@@ -145,19 +149,12 @@ export function BookInstances() {
     mesh.computeBoundingSphere();
   }, [visibleBooks]);
 
-  const handlePointerDown = (event: ThreeEvent<PointerEvent>) => {
+  const getTargetBookId = (event: ThreeEvent<PointerEvent>) => {
     if (event.instanceId === undefined) {
-      return;
+      return null;
     }
 
-    const target = visibleBooks[event.instanceId];
-
-    if (!target) {
-      return;
-    }
-
-    event.stopPropagation();
-    pickUpBook(target.book.id);
+    return visibleBooks[event.instanceId]?.book.id ?? null;
   };
 
   return (
@@ -166,7 +163,19 @@ export function BookInstances() {
       args={[undefined, undefined, 3072]}
       castShadow
       receiveShadow
-      onPointerDown={handlePointerDown}
+      onPointerMove={(event) => onInspectBook(getTargetBookId(event))}
+      onPointerOut={() => onInspectBook(null)}
+      onPointerDown={(event) => {
+        const bookId = getTargetBookId(event);
+
+        if (!bookId) {
+          return;
+        }
+
+        event.stopPropagation();
+        onInspectBook(null);
+        pickUpBook(bookId);
+      }}
     >
       <boxGeometry args={[1, 1, 1]} />
       <meshStandardMaterial roughness={0.78} />
