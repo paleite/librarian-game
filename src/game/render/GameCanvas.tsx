@@ -50,7 +50,8 @@ export function GameCanvas({
         far={120}
         fov={zoomHeld ? Math.max(25, fov * 0.55) : fov}
         near={0.05}
-        position={[0, 1.65, 7]}
+        position={[0, 1.65, 33]}
+        rotation={[0, Math.PI, 0]}
       />
       <LibraryLighting />
 
