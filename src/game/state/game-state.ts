@@ -6,6 +6,7 @@ import type { BookLocation, RunIdentity, Transform3 } from "@/game/run/types";
 export type GamePhase = "title" | "sorting" | "completed";
 
 export type MajorMagicLevels = Record<MajorMagicId, number>;
+export type MajorMagicReadyAt = Record<MajorMagicId, number>;
 
 export interface GameState {
   phase: GamePhase;
@@ -22,6 +23,8 @@ export interface GameState {
   activeShelfGuideSectionCode: SectionCode | null;
   activeInsightSeriesId: string | null;
   targetedShelfRowId: string | null;
+  majorMagicReadyAt: MajorMagicReadyAt;
+  autoShelvingActiveUntil: number;
 }
 
 export interface BookMovementActions {
@@ -45,6 +48,14 @@ export const initialMajorMagicLevels: MajorMagicLevels = {
   assemble: 0,
 };
 
+export const initialMajorMagicReadyAt: MajorMagicReadyAt = {
+  sort: 0,
+  "shelf-guide": 0,
+  insight: 0,
+  "auto-shelving": 0,
+  assemble: 0,
+};
+
 export const initialGameState: GameState = {
   phase: "title",
   runIdentity: null,
@@ -60,4 +71,6 @@ export const initialGameState: GameState = {
   activeShelfGuideSectionCode: null,
   activeInsightSeriesId: null,
   targetedShelfRowId: null,
+  majorMagicReadyAt: initialMajorMagicReadyAt,
+  autoShelvingActiveUntil: 0,
 };
