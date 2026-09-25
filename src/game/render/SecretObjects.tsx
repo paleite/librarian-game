@@ -42,6 +42,9 @@ export function SecretObjects() {
               <mesh
                 position={transforms.keyTransform.position}
                 rotation={transforms.keyTransform.rotation}
+                userData={{
+                  mobileInteract: () => collectSecretKey(secret.keyId),
+                }}
                 onPointerDown={(event) => {
                   event.stopPropagation();
                   collectSecretKey(secret.keyId);
@@ -62,6 +65,9 @@ export function SecretObjects() {
               position={transforms.chestTransform.position}
               rotation={transforms.chestTransform.rotation}
               scale={[0.72, 0.42, 0.52]}
+              userData={{
+                mobileInteract: () => openSecretChest(secret.keyId),
+              }}
               onPointerDown={(event) => {
                 event.stopPropagation();
                 openSecretChest(secret.keyId);
