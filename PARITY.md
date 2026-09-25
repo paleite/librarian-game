@@ -31,9 +31,9 @@ Project-specific additions such as mobile controls, Next.js, GitHub Pages, and p
 - [x] Section code/name plaques exist
 - [x] Completed sections can visibly indicate completion
 - [x] Recreate the source-like illustrated floor categorization/map board that shows where each book category belongs
-- [ ] Put the categorization maps in the correct staircase locations/orientations
+- [x] Put the categorization maps in the correct staircase locations/orientations
 - [x] Make the maps readable at normal in-world viewing distance
-- [ ] Match the source map's visual grouping/layout rather than only listing section names
+- [x] Match the source map's visual grouping/layout rather than only listing section names
 - [ ] Verify first-floor map presentation against the post-v1.0.5 source behavior
 
 ## 3. Book catalog, appearance, and classification clues
@@ -110,7 +110,7 @@ Project-specific additions such as mobile controls, Next.js, GitHub Pages, and p
 - [ ] Match Azure key location on the elevated second-floor shelf near 2O precisely
 - [ ] Preserve the traversal dependency where Azure effectively requires High Jump
 - [ ] Match chest locations around the Warrior/Archery side precisely
-- [ ] Reproduce chest reward presentation (letters/potions) where source-backed
+- [x] Reproduce chest reward presentation (letters/potions) where source-backed
 - [ ] Match key/chest interaction visuals/audio closely
 
 ## 7. Major Magic progression
@@ -141,12 +141,12 @@ Project-specific additions such as mobile controls, Next.js, GitHub Pages, and p
 - [x] Source-backed level-1/max timing endpoints are isolated as data
 - [ ] Verify exact effect semantics for every level of Sort
 - [ ] Verify exact effect semantics/range/count for every level of Assemble
-- [ ] Verify exact Auto-Shelving behavior while its active window is running
+- [x] Verify exact Auto-Shelving behavior while its active window is running
 - [ ] Verify exact intermediate cooldown values per level
 - [ ] Verify exact intermediate active-duration values per level
 - [ ] Match spell visual effects to source
 - [ ] Match spell audio to source behavior using original/non-copied assets
-- [ ] Match cooldown UI and ready-state feedback
+- [x] Match cooldown UI and ready-state feedback
 
 ## 9. Recall / late-game cleanup
 
@@ -227,7 +227,7 @@ Project-specific additions such as mobile controls, Next.js, GitHub Pages, and p
 - [x] Achievement persistence
 - [x] Achievement unlock toast
 - [x] Achievement gallery
-- [ ] Verify every achievement condition/name against the current source build
+- [x] Verify every achievement condition/name against the current source build
 - [ ] Ensure Archmage is actually reachable once the full Major Magic point schedule is known
 - [ ] Match source achievement timing/presentation where visible in-game
 
