@@ -147,6 +147,25 @@ export function BookInstances({ onInspectBook }: BookInstancesProps) {
       castShadow
       receiveShadow
       userData={{
+        getInteractionInfo: (intersection: THREE.Intersection) => {
+          const instanceId = intersection.instanceId;
+
+          if (instanceId === undefined) {
+            return null;
+          }
+
+          const target = visibleBooks[instanceId];
+
+          if (!target) {
+            return null;
+          }
+
+          return {
+            title: target.book.title,
+            subtitle: `Volume ${target.book.volumeNumber} / ${target.book.volumeCount}`,
+            action: "Pick up",
+          };
+        },
         mobileInteract: (intersection: THREE.Intersection) => {
           const instanceId = intersection.instanceId;
 
