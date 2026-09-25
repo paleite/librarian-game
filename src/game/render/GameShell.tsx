@@ -25,6 +25,7 @@ import { InteractionHud } from "./InteractionHud";
 import { MajorMagicHud } from "./MajorMagicHud";
 import { SkillPointProgress } from "./SkillPointProgress";
 import { TutorialHints } from "./TutorialHints";
+import { RecallConfirmationDialog } from "./RecallConfirmationDialog";
 import { SettingsPanel } from "./SettingsPanel";
 import { VignetteOverlay } from "./VignetteOverlay";
 import { CarriedBookList } from "./CarriedBookList";
@@ -248,6 +249,7 @@ export function GameShell() {
       <MajorMagicHud />
       <SkillPointProgress />
       <TutorialHints />
+      <RecallConfirmationDialog />
       <div className="absolute inset-0">
         <GameCanvas
           onPlacementFeedback={(feedback) => {
