@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 
 import { useGameStore } from "@/game/state/game-store";
+import { playRecallCue } from "@/game/audio/sfx";
 
 export function RecallStone() {
   const bookLocations = useGameStore((state) => state.bookLocations);
@@ -26,6 +27,8 @@ export function RecallStone() {
           mobileInteract: () => {
             if (enabled) {
               recallLooseBooks();
+            playRecallCue();
+              playRecallCue();
             }
           },
         }}
