@@ -7,10 +7,11 @@ import {
   RigidBody,
   type RapierRigidBody,
 } from "@react-three/rapier";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
 
 import { playerInput } from "@/game/input/player-input";
+import { useCoarsePointer } from "@/game/input/use-coarse-pointer";
 import { canSprint, hasHighJump } from "@/game/rules/progression";
 import type { Transform3 } from "@/game/run/types";
 import { useGameStore } from "@/game/state/game-store";
@@ -84,7 +85,7 @@ function dropBooks(camera: THREE.Camera, heldMilliseconds: number) {
 }
 
 export function PlayerController() {
-  const [coarsePointer, setCoarsePointer] = useState(false);
+  const coarsePointer = useCoarsePointer();
   const rigidBodyRef = useRef<RapierRigidBody>(null);
   const pressedKeysRef = useRef(new Set<string>());
   const dropKeyDownAtRef = useRef<number | null>(null);
@@ -94,16 +95,6 @@ export function PlayerController() {
   const interactionRaycaster = useRef(new THREE.Raycaster());
   const lastAimCheckAt = useRef(0);
   const lastTargetedShelfRowId = useRef<string | null>(null);
-
-  useEffect(() => {
-    const media = window.matchMedia("(pointer: coarse)");
-    const update = () => setCoarsePointer(media.matches);
-
-    update();
-    media.addEventListener("change", update);
-
-    return () => media.removeEventListener("change", update);
-  }, []);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
