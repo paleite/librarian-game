@@ -64,3 +64,16 @@ export function hasHighJump(
 ): boolean {
   return state.unlockedMinorMagicIds.includes("high-jump");
 }
+
+
+export function getRowsUntilNextKnownMajorMagicPoint(
+  correctRowCount: number,
+): number | null {
+  const nextThreshold = knownMajorMagicPointThresholds.find(
+    (threshold) => threshold > correctRowCount,
+  );
+
+  return nextThreshold === undefined
+    ? null
+    : nextThreshold - correctRowCount;
+}
