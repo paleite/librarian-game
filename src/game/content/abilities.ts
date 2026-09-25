@@ -1,15 +1,20 @@
-export type MajorMagicId =
-  | "sort"
-  | "shelf-guide"
-  | "insight"
-  | "auto-shelving"
-  | "assemble";
+export const majorMagicIds = [
+  "sort",
+  "shelf-guide",
+  "insight",
+  "auto-shelving",
+  "assemble",
+] as const;
 
-export type MinorMagicId =
-  | "high-jump"
-  | "carry-capacity-3"
-  | "sprint"
-  | "carry-capacity-2";
+export const minorMagicIds = [
+  "high-jump",
+  "carry-capacity-3",
+  "sprint",
+  "carry-capacity-2",
+] as const;
+
+export type MajorMagicId = (typeof majorMagicIds)[number];
+export type MinorMagicId = (typeof minorMagicIds)[number];
 
 export interface AbilityDefinition<TId extends string> {
   id: TId;
