@@ -59,8 +59,8 @@ export function FloorMaps() {
       />
       <FloorMap
         floor={2}
-        position={[3.15, 6.35, 27.2]}
-        rotation={[0, Math.PI - 0.16, 0]}
+        position={[3.15, 1.75, 35.2]}
+        rotation={[0, -0.16, 0]}
       />
     </>
   );
