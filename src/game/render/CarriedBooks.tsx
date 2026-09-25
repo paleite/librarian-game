@@ -73,6 +73,7 @@ function CarriedBook({
       <BookLabelPlane
         title={book.title}
         volumeNumber={book.volumeNumber}
+        seriesId={book.seriesId}
       />
     </mesh>
   );
