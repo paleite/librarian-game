@@ -44,7 +44,7 @@ export function SectionPlaques() {
 
   const topCarriedBookId = carriedBookIds.at(-1);
   const guidedSectionCode =
-    shelfGuideActiveUntil > Date.now() && topCarriedBookId
+    shelfGuideActiveUntil > 0 && topCarriedBookId
       ? bookInstances.find((book) => book.id === topCarriedBookId)?.sectionCode ??
         null
       : null;
