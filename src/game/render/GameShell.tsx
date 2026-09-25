@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { useGameStore } from "@/game/state/game-store";
 import { getCorrectRowCount } from "@/game/rules/shelf-state";
+import { getCarryCapacity } from "@/game/rules/progression";
 
 import { GameCanvas } from "./GameCanvas";
 
@@ -14,7 +15,9 @@ export function GameShell() {
   const startNewGame = useGameStore((state) => state.startNewGame);
   const bookLocations = useGameStore((state) => state.bookLocations);
   const carriedCount = useGameStore((state) => state.carriedBookIds.length);
+  const unlockedMinorMagicIds = useGameStore((state) => state.unlockedMinorMagicIds);
   const correctRows = getCorrectRowCount(bookLocations);
+  const carryCapacity = getCarryCapacity({ unlockedMinorMagicIds });
   const saveToSlot = useGameStore((state) => state.saveToSlot);
   const loadFromSlot = useGameStore((state) => state.loadFromSlot);
 
@@ -38,14 +41,14 @@ export function GameShell() {
           <div className="rounded-lg border border-white/10 bg-black/55 px-3 py-2 text-sm text-white backdrop-blur">
             <div className="font-medium">Librarian Game</div>
             <div className="text-white/60">
-              WASD · click scene for mouse look · Esc releases
+              WASD · Space jump · Q drop / hold Q drop stack · Esc releases
             </div>
           </div>
 
           <div className="pointer-events-auto rounded-lg border border-white/10 bg-black/55 px-3 py-2 text-right text-xs text-white/70 backdrop-blur">
             <div>Phase: {phase}</div>
             <div>Correct rows: {correctRows} / 400</div>
-            <div>Carrying: {carriedCount} / 10+</div>
+            <div>Carrying: {carriedCount} / {carryCapacity}</div>
             <div className="max-w-52 truncate">Seed: {seed ?? "none"}</div>
             <div className="mt-2 flex justify-end gap-2">
               <button
