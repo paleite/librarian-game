@@ -7,7 +7,9 @@ import { generateInitialRun, CATALOG_VERSION, LAYOUT_VERSION } from "@/game/run/
 import { spawnSlots } from "@/game/layout/spawn-slots";
 import type { BookLocation } from "@/game/run/types";
 import { readSaveSlot, writeSaveSlot } from "@/game/save/storage";
-import { getCarryCapacity } from "@/game/rules/progression";
+import { getAvailableKnownMajorMagicPoints, getCarryCapacity } from "@/game/rules/progression";
+import { getCorrectRowCount } from "@/game/rules/shelf-state";
+import { majorMagicDefinitionById, type MajorMagicId } from "@/game/content/abilities";
 import { secretDefinitions } from "@/game/content/secrets";
 
 import {
@@ -21,6 +23,7 @@ export interface GameActions extends BookMovementActions {
   returnToTitle: () => void;
   setCozyMode: (enabled: boolean) => void;
   setAutosaveEnabled: (enabled: boolean) => void;
+  upgradeMajorMagic: (id: MajorMagicId) => void;
   saveToSlot: (slotId: string) => void;
   loadFromSlot: (slotId: string) => void;
 }
@@ -89,6 +92,38 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setCozyMode: (enabled) => set({ cozyMode: enabled }),
 
   setAutosaveEnabled: (enabled) => set({ autosaveEnabled: enabled }),
+
+  upgradeMajorMagic: (id) => {
+    const state = get();
+    const definition = majorMagicDefinitionById.get(id);
+
+    if (!definition) {
+      return;
+    }
+
+    const currentLevel = state.majorMagicLevels[id];
+
+    if (currentLevel >= definition.maxLevel) {
+      return;
+    }
+
+    const correctRows = getCorrectRowCount(state.bookLocations);
+    const availablePoints = getAvailableKnownMajorMagicPoints(
+      correctRows,
+      state.majorMagicLevels,
+    );
+
+    if (availablePoints <= 0) {
+      return;
+    }
+
+    set({
+      majorMagicLevels: {
+        ...state.majorMagicLevels,
+        [id]: currentLevel + 1,
+      },
+    });
+  },
 
   pickUpBook: (bookId) => {
     const state = get();
@@ -283,7 +318,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const state = get();
 
     writeSaveSlot(slotId, {
-      saveVersion: 2,
+      saveVersion: 3,
       savedAt: new Date().toISOString(),
       state: {
         phase: state.phase,
@@ -291,7 +326,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         bookLocations: state.bookLocations,
         carriedBookIds: state.carriedBookIds,
         collectedKeyIds: state.collectedKeyIds,
-        unlockedMajorMagicIds: state.unlockedMajorMagicIds,
+        majorMagicLevels: state.majorMagicLevels,
         unlockedMinorMagicIds: state.unlockedMinorMagicIds,
         elapsedMilliseconds: state.elapsedMilliseconds,
         majorMagicUsageCount: state.majorMagicUsageCount,
