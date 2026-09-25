@@ -1,6 +1,7 @@
 import { SavePayloadSchema, type SavePayload } from "./schema";
 
 const SAVE_KEY_PREFIX = "librarian-game.save.";
+export const SAVE_SLOTS_CHANGED_EVENT = "librarian-game:save-slots-changed";
 const SLOT_ID_PATTERN = /^[a-z0-9-]{1,32}$/;
 
 function getStorage(): Storage {
@@ -22,6 +23,7 @@ function getSaveKey(slotId: string): string {
 export function writeSaveSlot(slotId: string, payload: unknown): void {
   const validatedPayload = SavePayloadSchema.parse(payload);
   getStorage().setItem(getSaveKey(slotId), JSON.stringify(validatedPayload));
+  window.dispatchEvent(new Event(SAVE_SLOTS_CHANGED_EVENT));
 }
 
 export function readSaveSlot(slotId: string): SavePayload | null {
@@ -44,6 +46,7 @@ export function readSaveSlot(slotId: string): SavePayload | null {
 
 export function deleteSaveSlot(slotId: string): void {
   getStorage().removeItem(getSaveKey(slotId));
+  window.dispatchEvent(new Event(SAVE_SLOTS_CHANGED_EVENT));
 }
 
 export function listSaveSlotIds(): string[] {
