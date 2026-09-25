@@ -2,8 +2,8 @@
 
 import { useMemo } from "react";
 
-import { useGameStore } from "@/game/state/game-store";
 import { playRecallCue } from "@/game/audio/sfx";
+import { useGameStore } from "@/game/state/game-store";
 
 export function RecallStone() {
   const bookLocations = useGameStore((state) => state.bookLocations);
@@ -19,25 +19,23 @@ export function RecallStone() {
 
   const enabled = unshelvedCount > 0 && unshelvedCount <= 20;
 
+  const activate = () => {
+    if (!enabled) {
+      return;
+    }
+
+    recallLooseBooks();
+    playRecallCue();
+  };
+
   return (
     <group position={[0, 0, 35.2]}>
       <mesh
         position={[0, 0.55, 0]}
-        userData={{
-          mobileInteract: () => {
-            if (enabled) {
-              recallLooseBooks();
-            playRecallCue();
-              playRecallCue();
-            }
-          },
-        }}
+        userData={{ mobileInteract: activate }}
         onPointerDown={(event) => {
           event.stopPropagation();
-
-          if (enabled) {
-            recallLooseBooks();
-          }
+          activate();
         }}
       >
         <cylinderGeometry args={[0.34, 0.45, 1.1, 8]} />
