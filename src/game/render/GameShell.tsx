@@ -25,6 +25,14 @@ export function GameShell() {
   const startNewGame = useGameStore((state) => state.startNewGame);
   const saveToSlot = useGameStore((state) => state.saveToSlot);
   const loadFromSlot = useGameStore((state) => state.loadFromSlot);
+  const setCozyMode = useGameStore((state) => state.setCozyMode);
+  const cozyMode = useGameStore((state) => state.cozyMode);
+  const elapsedMilliseconds = useGameStore(
+    (state) => state.elapsedMilliseconds,
+  );
+  const majorMagicUsageCount = useGameStore(
+    (state) => state.majorMagicUsageCount,
+  );
   const setAutosaveEnabled = useGameStore(
     (state) => state.setAutosaveEnabled,
   );
@@ -42,6 +50,19 @@ export function GameShell() {
 
   const correctRows = getCorrectRowCount(bookLocations);
   const carryCapacity = getCarryCapacity({ unlockedMinorMagicIds });
+  const elapsedSeconds = Math.floor(elapsedMilliseconds / 1000);
+  const elapsedText = [
+    Math.floor(elapsedSeconds / 3600),
+    Math.floor((elapsedSeconds % 3600) / 60),
+    elapsedSeconds % 60,
+  ]
+    .map((value) => String(value).padStart(2, "0"))
+    .join(":");
+  const allBooksShelved =
+    Object.values(bookLocations).length === 3072 &&
+    Object.values(bookLocations).every(
+      (location) => location.kind === "shelf",
+    );
   const knownEarnedMagicPoints = getKnownEarnedMajorMagicPoints(correctRows);
   const spentMagicPoints = getSpentMajorMagicPoints(majorMagicLevels);
   const availableMagicPoints = getAvailableKnownMajorMagicPoints(
@@ -131,6 +152,7 @@ export function GameShell() {
 
           <div className="pointer-events-auto rounded-lg border border-white/10 bg-black/55 px-3 py-2 text-right text-xs text-white/70 backdrop-blur">
             <div>Phase: {phase}</div>
+            {!cozyMode ? <div>Time: {elapsedText}</div> : null}
             <div>Correct rows: {correctRows} / 400</div>
             <div>Major Magic points: {availableMagicPoints} available · {spentMagicPoints}/{knownEarnedMagicPoints} spent/known earned</div>
             <div>Carrying: {carriedCount} / {carryCapacity}</div>
@@ -141,6 +163,17 @@ export function GameShell() {
             <div className="max-w-52 truncate">Seed: {seed ?? "none"}</div>
 
             <label className="mt-2 flex items-center justify-end gap-2">
+              <span>Cozy</span>
+              <input
+                checked={cozyMode}
+                onChange={(event) =>
+                  setCozyMode(event.currentTarget.checked)
+                }
+                type="checkbox"
+              />
+            </label>
+
+            <label className="mt-1 flex items-center justify-end gap-2">
               <span>Autosave</span>
               <input
                 checked={autosaveEnabled}
@@ -208,6 +241,65 @@ export function GameShell() {
               : placementFeedback === "correct-section"
                 ? "Correct section, wrong position or row"
                 : "Wrong section"}
+          </div>
+        ) : null}
+
+        {phase === "sorting" && allBooksShelved ? (
+          <div className="pointer-events-none absolute bottom-8 left-1/2 -translate-x-1/2 rounded-full border border-amber-300/25 bg-black/70 px-4 py-2 text-sm text-amber-100 backdrop-blur">
+            All 3,072 books are shelved. Return to the front doors.
+          </div>
+        ) : null}
+
+        {phase === "completed" ? (
+          <div className="pointer-events-auto absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+            <div className="w-[min(38rem,calc(100vw-2rem))] rounded-2xl border border-white/15 bg-stone-950/95 p-7 text-white shadow-2xl">
+              <div className="text-xs font-semibold uppercase tracking-[0.2em] text-amber-300">
+                Principal&apos;s Evaluation
+              </div>
+              <h2 className="mt-2 text-3xl font-semibold">
+                Library submitted
+              </h2>
+
+              <div className="mt-5 grid grid-cols-2 gap-3 text-sm">
+                <div className="rounded-lg bg-white/[0.05] p-3">
+                  <div className="text-white/50">Correct rows</div>
+                  <div className="mt-1 text-xl font-semibold">
+                    {correctRows}/400
+                  </div>
+                </div>
+                <div className="rounded-lg bg-white/[0.05] p-3">
+                  <div className="text-white/50">Time</div>
+                  <div className="mt-1 text-xl font-semibold">
+                    {elapsedText}
+                  </div>
+                </div>
+                <div className="rounded-lg bg-white/[0.05] p-3">
+                  <div className="text-white/50">Major Magic uses</div>
+                  <div className="mt-1 text-xl font-semibold">
+                    {majorMagicUsageCount}
+                  </div>
+                </div>
+                <div className="rounded-lg bg-white/[0.05] p-3">
+                  <div className="text-white/50">Shelved books</div>
+                  <div className="mt-1 text-xl font-semibold">
+                    3072/3072
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-5 space-y-2 text-sm text-white/75">
+                {correctRows === 400 &&
+                elapsedMilliseconds < 3 * 60 * 60 * 1000 ? (
+                  <div>Efficiency Librarian condition met.</div>
+                ) : null}
+                {correctRows === 400 && majorMagicUsageCount === 0 ? (
+                  <div>Anti-Magic Master condition met.</div>
+                ) : null}
+                {correctRows === 0 ? (
+                  <div>You are Fired! condition met.</div>
+                ) : null}
+              </div>
+            </div>
           </div>
         ) : null}
 
