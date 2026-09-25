@@ -1,6 +1,6 @@
 import type { MajorMagicId, MinorMagicId } from "@/game/content/abilities";
 import type { SecretKeyId } from "@/game/content/secrets";
-import type { BookLocation, RunIdentity } from "@/game/run/types";
+import type { BookLocation, RunIdentity, Transform3 } from "@/game/run/types";
 
 export type GamePhase = "title" | "sorting" | "completed";
 
@@ -15,6 +15,14 @@ export interface GameState {
   elapsedMilliseconds: number;
   majorMagicUsageCount: number;
   cozyMode: boolean;
+}
+
+export interface BookMovementActions {
+  pickUpBook: (bookId: string) => void;
+  reorderCarriedBook: (fromIndex: number, toIndex: number) => void;
+  dropCarriedBook: (bookId: string, transform: Transform3) => void;
+  dropAllCarriedBooks: (transforms: readonly Transform3[]) => void;
+  placeBookOnShelf: (bookId: string, rowId: string, index: number) => void;
 }
 
 export const initialGameState: GameState = {
