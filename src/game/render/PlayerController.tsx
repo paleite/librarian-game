@@ -88,7 +88,7 @@ function dropBooks(camera: THREE.Camera, heldMilliseconds: number) {
 
 export function PlayerController() {
   const coarsePointer = useCoarsePointer();
-  const { invertMouse } = useGameSettings();
+  const { invertMouse, keyBindings } = useGameSettings();
   const rigidBodyRef = useRef<RapierRigidBody>(null);
   const pressedKeysRef = useRef(new Set<string>());
   const dropKeyDownAtRef = useRef<number | null>(null);
@@ -106,42 +106,39 @@ export function PlayerController() {
       pressedKeysRef.current.add(event.code);
 
       if (
-        event.code === "KeyE" &&
+        event.code === keyBindings.interact &&
         !event.repeat &&
         document.pointerLockElement
       ) {
         playerInput.queueInteract();
       }
 
-      if (event.code === "KeyQ" && !event.repeat) {
+      if (event.code === keyBindings.drop && !event.repeat) {
         dropKeyDownAtRef.current = performance.now();
       }
 
-      if (event.code === "KeyZ" && !event.repeat) {
+      if (event.code === keyBindings.specialUltimate && !event.repeat) {
         playerInput.queueSpecialUltimate();
       }
 
-      if (
-        !event.repeat &&
-        document.pointerLockElement &&
-        ["Digit1", "Digit2", "Digit3", "Digit4", "Digit5"].includes(event.code)
-      ) {
-        const magicByKey = {
-          Digit1: "sort",
-          Digit2: "shelf-guide",
-          Digit3: "insight",
-          Digit4: "auto-shelving",
-          Digit5: "assemble",
-        } as const;
-
-        const magicId = magicByKey[event.code as keyof typeof magicByKey];
+      if (!event.repeat && document.pointerLockElement) {
+        const magicBindings = [
+          [keyBindings.ability1, "sort"],
+          [keyBindings.ability2, "shelf-guide"],
+          [keyBindings.ability3, "insight"],
+          [keyBindings.ability4, "auto-shelving"],
+          [keyBindings.ability5, "assemble"],
+        ] as const;
+        const magicId = magicBindings.find(
+          ([code]) => code === event.code,
+        )?.[1];
 
         if (magicId) {
           playerInput.queueMajorMagic(magicId);
         }
       }
 
-      if (event.code === "Space" && !event.repeat) {
+      if (event.code === keyBindings.jump && !event.repeat) {
         playerInput.queueJump();
       }
     };
@@ -149,7 +146,7 @@ export function PlayerController() {
     const handleKeyUp = (event: KeyboardEvent) => {
       pressedKeysRef.current.delete(event.code);
 
-      if (event.code !== "KeyQ") {
+      if (event.code !== keyBindings.drop) {
         return;
       }
 
@@ -200,7 +197,7 @@ export function PlayerController() {
       window.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener("wheel", handleWheel);
     };
-  }, []);
+  }, [keyBindings]);
 
   useEffect(() => {
     const handleMouseMove = (event: MouseEvent) => {
@@ -391,11 +388,11 @@ export function PlayerController() {
     rightVector.current.crossVectors(forwardVector.current, camera.up).normalize();
 
     const keyboardX =
-      (pressedKeysRef.current.has("KeyD") ? 1 : 0) -
-      (pressedKeysRef.current.has("KeyA") ? 1 : 0);
+      (pressedKeysRef.current.has(keyBindings.moveRight) ? 1 : 0) -
+      (pressedKeysRef.current.has(keyBindings.moveLeft) ? 1 : 0);
     const keyboardY =
-      (pressedKeysRef.current.has("KeyW") ? 1 : 0) -
-      (pressedKeysRef.current.has("KeyS") ? 1 : 0);
+      (pressedKeysRef.current.has(keyBindings.moveForward) ? 1 : 0) -
+      (pressedKeysRef.current.has(keyBindings.moveBackward) ? 1 : 0);
 
     const moveX = THREE.MathUtils.clamp(keyboardX + frameInput.moveX, -1, 1);
     const moveY = THREE.MathUtils.clamp(keyboardY + frameInput.moveY, -1, 1);
@@ -410,7 +407,7 @@ export function PlayerController() {
     if (movementVector.current.lengthSq() > 0) {
       const state = useGameStore.getState();
       const wantsSprint =
-        pressedKeysRef.current.has("ShiftLeft") || inputMagnitude > 0.82;
+        pressedKeysRef.current.has(keyBindings.sprint) || inputMagnitude > 0.82;
       const speed = wantsSprint && canSprint(state) ? SPRINT_SPEED : WALK_SPEED;
 
       movementVector.current.normalize().multiplyScalar(speed);
