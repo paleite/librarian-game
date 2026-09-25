@@ -15,6 +15,7 @@ import { ShelfTargets } from "./ShelfTargets";
 import { SectionPlaques } from "./SectionPlaques";
 import { ExitDoor } from "./ExitDoor";
 import { GameClock } from "./GameClock";
+import { SpecialStageController } from "./SpecialStageController";
 
 export interface GameCanvasProps {
   onInspectBook: (bookId: string | null) => void;
@@ -44,6 +45,7 @@ export function GameCanvas({
 
       <Physics gravity={[0, -20, 0]}>
         <GameClock />
+        <SpecialStageController />
         <LibraryScene />
         <ExitDoor />
         <ShelfTargets onPlacementFeedback={onPlacementFeedback} />
