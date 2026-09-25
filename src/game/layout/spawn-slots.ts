@@ -25,20 +25,18 @@ const tutorialSpawnSlots: readonly SpawnSlotDefinition[] =
     floor: 1,
     transform: {
       position: [
-        1.25 + (index % 5) * 0.16,
+        0.95 + (index % 5) * 0.18,
         0.12 + Math.floor(index / 5) * 0.065,
-        6.1 + Math.floor(index / 5) * 0.12,
+        31.2 + Math.floor(index / 5) * 0.14,
       ],
-      rotation: [0.02, -0.18 + (index % 5) * 0.04, 0],
+      rotation: [0.02, -0.16 + (index % 5) * 0.04, 0],
     },
   }));
 
-function createFloorSpawnSlots(
-  floor: 1 | 2,
-  floorY: number,
+function createFirstFloorSpawnSlots(
   count: number,
 ): SpawnSlotDefinition[] {
-  const random = createSeededRandom(`layout-v3-floor-${floor}`);
+  const random = createSeededRandom("layout-v4-floor-1");
   const rows = Math.ceil(count / GRID_COLUMNS);
   const slots: SpawnSlotDefinition[] = [];
 
@@ -56,15 +54,59 @@ function createFloorSpawnSlots(
       normalizedZ * HALL_LENGTH +
       (random() - 0.5) * (HALL_LENGTH / rows) * 0.85;
     const yaw = (random() - 0.5) * Math.PI * 2;
-    const tiltX = (random() - 0.5) * 0.16;
-    const tiltZ = (random() - 0.5) * 0.16;
 
     slots.push({
-      id: `floor-${floor}-scatter-${String(index + 1).padStart(4, "0")}`,
-      floor,
+      id: `floor-1-scatter-${String(index + 1).padStart(4, "0")}`,
+      floor: 1,
       transform: {
-        position: [x, floorY + 0.08, z],
-        rotation: [tiltX, yaw, tiltZ],
+        position: [x, 0.08, z],
+        rotation: [
+          (random() - 0.5) * 0.16,
+          yaw,
+          (random() - 0.5) * 0.16,
+        ],
+      },
+    });
+  }
+
+  return slots;
+}
+
+function createSecondFloorSpawnSlots(
+  count: number,
+): SpawnSlotDefinition[] {
+  const random = createSeededRandom("layout-v4-floor-2");
+  const slots: SpawnSlotDefinition[] = [];
+
+  for (let index = 0; index < count; index += 1) {
+    const selector = index % 100;
+    let x: number;
+    let z: number;
+
+    if (selector < 42) {
+      x = -6.9 + (random() - 0.5) * 3.2;
+      z = -4 + (random() - 0.5) * 60;
+    } else if (selector < 84) {
+      x = 6.9 + (random() - 0.5) * 3.2;
+      z = -4 + (random() - 0.5) * 60;
+    } else if (selector < 94) {
+      x = (random() - 0.5) * 15.6;
+      z = -38 + (random() - 0.5) * 5.6;
+    } else {
+      x = (random() - 0.5) * 15.6;
+      z = 28 + (random() - 0.5) * 5.6;
+    }
+
+    slots.push({
+      id: `floor-2-scatter-${String(index + 1).padStart(4, "0")}`,
+      floor: 2,
+      transform: {
+        position: [x, 4.68, z],
+        rotation: [
+          (random() - 0.5) * 0.16,
+          (random() - 0.5) * Math.PI * 2,
+          (random() - 0.5) * 0.16,
+        ],
       },
     });
   }
@@ -74,16 +116,19 @@ function createFloorSpawnSlots(
 
 /**
  * Physical spawn positions stay fixed between runs. The book identities assigned
- * to the ordinary slots are shuffled; the ten-book tutorial series is fixed.
+ * to ordinary slots are shuffled; the ten-book white-cat tutorial series stays
+ * together near the starting area.
  */
 export const spawnSlots: readonly SpawnSlotDefinition[] = [
   ...tutorialSpawnSlots,
-  ...createFloorSpawnSlots(1, 0, FIRST_FLOOR_RANDOMIZED_BOOKS),
-  ...createFloorSpawnSlots(2, 4.6, SECOND_FLOOR_RANDOMIZED_BOOKS),
+  ...createFirstFloorSpawnSlots(FIRST_FLOOR_RANDOMIZED_BOOKS),
+  ...createSecondFloorSpawnSlots(SECOND_FLOOR_RANDOMIZED_BOOKS),
 ];
 
 if (spawnSlots.length !== TOTAL_BOOKS) {
-  throw new Error(`Expected ${TOTAL_BOOKS} spawn slots, got ${spawnSlots.length}`);
+  throw new Error(
+    `Expected ${TOTAL_BOOKS} spawn slots, got ${spawnSlots.length}`,
+  );
 }
 
 export const spawnSlotById = new Map(
