@@ -55,6 +55,7 @@ export function BookInstances({ onInspectBook }: BookInstancesProps) {
   const instancedMeshRef = useRef<THREE.InstancedMesh>(null);
   const bookLocations = useGameStore((state) => state.bookLocations);
   const pickUpBook = useGameStore((state) => state.pickUpBook);
+  const activeInsightSeriesId = useGameStore((state) => state.activeInsightSeriesId);
 
   const visibleBooks = useMemo(
     () =>
@@ -133,9 +134,18 @@ export function BookInstances({ onInspectBook }: BookInstancesProps) {
       matrix.compose(position, quaternion, scale);
 
       mesh.setMatrixAt(index, matrix);
+      const location = bookLocations[book.id];
+      const insightMatch =
+        activeInsightSeriesId === book.seriesId &&
+        (location?.kind === "spawn" || location?.kind === "dropped");
+
       mesh.setColorAt(
         index,
-        color.set(SECTION_COLORS[book.sectionCode] ?? "#7a6a58"),
+        color.set(
+          insightMatch
+            ? "#f6e76a"
+            : SECTION_COLORS[book.sectionCode] ?? "#7a6a58",
+        ),
       );
     }
 
@@ -147,7 +157,7 @@ export function BookInstances({ onInspectBook }: BookInstancesProps) {
     }
 
     mesh.computeBoundingSphere();
-  }, [visibleBooks]);
+  }, [activeInsightSeriesId, bookLocations, visibleBooks]);
 
   const getTargetBookId = (event: ThreeEvent<PointerEvent>) => {
     if (event.instanceId === undefined) {
