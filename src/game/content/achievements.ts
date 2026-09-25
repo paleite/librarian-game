@@ -45,7 +45,7 @@ export const achievementDefinitions: readonly AchievementDefinition[] = [
   {
     id: "novice-mage",
     name: "Novice Mage",
-    description: "Use Major Magic for the first time.",
+    description: "Unlock your first Major Magic ability.",
   },
   {
     id: "sage",
@@ -75,7 +75,7 @@ export const achievementDefinitions: readonly AchievementDefinition[] = [
   {
     id: "anti-magic",
     name: "Anti-Magic",
-    description: "Finish all 400 rows without using Major Magic.",
+    description: "Finish all 400 rows without unlocking or using Major Magic.",
   },
   {
     id: "you-are-fired",
