@@ -92,7 +92,7 @@ function dropBooks(camera: THREE.Camera, heldMilliseconds: number) {
 
 export function PlayerController() {
   const coarsePointer = useCoarsePointer();
-  const { invertMouse, keyBindings } = useGameSettings();
+  const { invertMouse, keyBindings, lookSensitivity } = useGameSettings();
   const rigidBodyRef = useRef<RapierRigidBody>(null);
   const pressedKeysRef = useRef(new Set<string>());
   const dropKeyDownAtRef = useRef<number | null>(null);
@@ -105,6 +105,7 @@ export function PlayerController() {
   const lastTargetedShelfRowId = useRef<string | null>(null);
   const lastAimObject = useRef<THREE.Object3D | null>(null);
   const lastFootstepAt = useRef(0);
+  const previousGamepadButtons = useRef<boolean[]>([]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -258,10 +259,13 @@ export function PlayerController() {
       }
 
       camera.rotation.order = "YXZ";
-      camera.rotation.y -= event.movementX * 0.002;
+      camera.rotation.y -= event.movementX * 0.002 * lookSensitivity;
       camera.rotation.x = THREE.MathUtils.clamp(
         camera.rotation.x +
-          event.movementY * 0.002 * (invertMouse ? 1 : -1),
+          event.movementY *
+            0.002 *
+            lookSensitivity *
+            (invertMouse ? 1 : -1),
         -MAX_PITCH,
         MAX_PITCH,
       );
@@ -270,7 +274,7 @@ export function PlayerController() {
     document.addEventListener("mousemove", handleMouseMove);
 
     return () => document.removeEventListener("mousemove", handleMouseMove);
-  }, [coarsePointer, invertMouse]);
+  }, [coarsePointer, invertMouse, lookSensitivity]);
 
   useFrame(({ camera, scene }) => {
     statePlayerCamera.current = camera;
@@ -282,6 +286,68 @@ export function PlayerController() {
     }
 
     const frameInput = playerInput.consumeFrame();
+
+    const gamepad =
+      typeof navigator !== "undefined" && navigator.getGamepads
+        ? Array.from(navigator.getGamepads()).find(
+            (candidate): candidate is Gamepad => candidate !== null,
+          ) ?? null
+        : null;
+
+    let gamepadMoveX = 0;
+    let gamepadMoveY = 0;
+
+    if (gamepad) {
+      const applyDeadZone = (value: number) =>
+        Math.abs(value) < 0.16 ? 0 : value;
+
+      gamepadMoveX = applyDeadZone(gamepad.axes[0] ?? 0);
+      gamepadMoveY = -applyDeadZone(gamepad.axes[1] ?? 0);
+
+      const lookX = applyDeadZone(gamepad.axes[2] ?? 0);
+      const lookY = applyDeadZone(gamepad.axes[3] ?? 0);
+
+      if (lookX !== 0 || lookY !== 0) {
+        camera.rotation.order = "YXZ";
+        camera.rotation.y -= lookX * 0.045 * lookSensitivity;
+        camera.rotation.x = THREE.MathUtils.clamp(
+          camera.rotation.x +
+            lookY *
+              0.032 *
+              lookSensitivity *
+              (invertMouse ? 1 : -1),
+          -MAX_PITCH,
+          MAX_PITCH,
+        );
+      }
+
+      const previous = previousGamepadButtons.current;
+      const pressed = (index: number) => gamepad.buttons[index]?.pressed ?? false;
+      const justPressed = (index: number) => pressed(index) && !previous[index];
+      const justReleased = (index: number) => !pressed(index) && previous[index];
+
+      if (justPressed(0)) {
+        playerInput.queueJump();
+      }
+
+      if (justPressed(2)) {
+        playerInput.queueInteract();
+      }
+
+      if (justPressed(1)) {
+        playerInput.startDrop();
+      }
+
+      if (justReleased(1)) {
+        playerInput.releaseDrop();
+      }
+
+      previousGamepadButtons.current = gamepad.buttons.map(
+        (button) => button.pressed,
+      );
+    } else {
+      previousGamepadButtons.current = [];
+    }
 
     if (
       !document.pointerLockElement &&
@@ -440,8 +506,16 @@ export function PlayerController() {
       (pressedKeysRef.current.has(keyBindings.moveForward) ? 1 : 0) -
       (pressedKeysRef.current.has(keyBindings.moveBackward) ? 1 : 0);
 
-    const moveX = THREE.MathUtils.clamp(keyboardX + frameInput.moveX, -1, 1);
-    const moveY = THREE.MathUtils.clamp(keyboardY + frameInput.moveY, -1, 1);
+    const moveX = THREE.MathUtils.clamp(
+      keyboardX + frameInput.moveX + gamepadMoveX,
+      -1,
+      1,
+    );
+    const moveY = THREE.MathUtils.clamp(
+      keyboardY + frameInput.moveY + gamepadMoveY,
+      -1,
+      1,
+    );
 
     movementVector.current
       .copy(forwardVector.current)
